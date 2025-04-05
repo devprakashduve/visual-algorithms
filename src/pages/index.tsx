@@ -17,8 +17,7 @@ const BubbleSortVisualization = dynamic(
   { ssr: false }
 );
 
-// Keep BoxRow import if needed elsewhere, otherwise remove if only used by BubbleSortVisualization
-// import BoxRow from "../../components/molecules/boxRow";
+// Removed unused BoxRow import comment
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,18 +26,12 @@ export default function Home() {
   const [dataV, setDataV] = useState([2, 4, 6, 8]);
 
   const handleClick = () => {
-    setDataV(dataV.map((value) => value + 1));
-  };
-
-  const [array, setArray] = useState([5, 3, 8, 2, 1, 4]);
-
-  // Function to update the array
-  const updateArray = () => {
-    const newArray = [2, 5, 1, 4, 8, 3];
-    setArray(newArray);
-  };
-
-  return (
+     setDataV(dataV.map((value) => value + 1));
+   };
+ 
+   // Removed unused array state and updateArray function
+ 
+   return (
     <>
       <Header title={""} />
       {/* <Banner imgSrc={""}/> */}
@@ -46,7 +39,7 @@ export default function Home() {
       {/* <BubbleShorting /> */}
       {/* Render the dynamically imported component */}
       <BubbleSortVisualization />
-      {/* <BoxRow/> */} {/* Remove this if BoxRow is only used inside BubbleSortVisualization */}
+      {/* Removed commented-out BoxRow usage */}
       <button onClick={handleClick}>Increment Data</button>
       <div className="h-screen">
         <p>

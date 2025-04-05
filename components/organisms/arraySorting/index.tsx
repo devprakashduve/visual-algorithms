@@ -19,80 +19,11 @@ function Plane(props: PlaneProps) {
     </mesh>
   );
 }
-// function Plane(props: PlaneProps) {
-//    const [ref, api] = useBox(
-//     () => ({ args: [1, 1, 1], mass: 0, ...props }),
-//     useRef()
-//   )
-//   return (
-//     <mesh ref={ref} castShadow onPointerDown={() => api.velocity.set(0, 5, 0)}  position={[0, 0, 0]}>
-//       <boxGeometry args={[100, 1, 100]}/>
-//        <meshNormalMaterial />
-//      </mesh>
-//   )
-// }
 
-// function Box(props) {
-//   const [ref, api] = useBox(
-//     () => ({ args: [1, 1, 1], mass: 1, ...props }),
-//     useRef()
-//   )
+// Note: The commented-out components below (Plane, Box, Sphere, Cylinder, TorusKnot variations)
+// seem like experiments or unused alternatives and have been removed for clarity.
 
-//   return (
-//     <mesh ref={ref} castShadow onPointerDown={() => api.velocity.set(0, 5, 0)}>
-//       <boxGeometry args={[1, 1, 1]} />
-//       <meshNormalMaterial />
-//     </mesh>
-//   )
-// }
-
-// function Sphere(props) {
-//   const [ref, api] = useSphere(
-//     () => ({ args: [0.75], mass: 1, ...props }),
-//     useRef()
-//   )
-
-//   return (
-//     <mesh ref={ref} castShadow onPointerDown={() => api.velocity.set(0, 5, 0)}>
-//       <sphereGeometry args={[0.75]} />
-//       <meshNormalMaterial />
-//     </mesh>
-//   )
-// }
-
-// function Cylinder(props) {
-//   const [ref, api] = useCylinder(
-//     () => ({ args: [1, 1, 2, 8], mass: 1, ...props }),
-//     useRef()
-//   )
-
-//   return (
-//     <mesh ref={ref} castShadow onPointerDown={() => api.velocity.set(0, 5, 0)}>
-//       <cylinderGeometry args={[1, 1, 2, 8]} />
-//       <meshNormalMaterial />
-//     </mesh>
-//   )
-// }
-
-// function TorusKnot(props) {
-//   const geometry = useMemo(() => new TorusKnotGeometry(), [])
-//   const [ref, api] = useTrimesh(
-//     () => ({
-//       args: [geometry.attributes.position.array, geometry.index.array],
-//       mass: 1,
-//       ...props,
-//     }),
-//     useRef()
-//   )
-
-//   return (
-//     <mesh ref={ref} castShadow onPointerDown={() => api.velocity.set(0, 5, 0)}>
-//       <torusKnotGeometry />
-//       <meshNormalMaterial />
-//     </mesh>
-//   )
-// }
-
+// Base component representing the ground plane
 const Base: React.FC = () => {
   const [ref] = useBox(() => ({
     mass: 0,
@@ -125,90 +56,197 @@ const Pillar: React.FC = () => {
   );
 };
 
-// Initial data for the boxes
+// Initial data for the boxes/array elements
 const initialArrayData = [5, 3, 8, 9, 10, 2, 1, 4, 6, 7];
 
-export default function App() {
+// Main component for the Array Sorting Visualization
+export default function ArraySortingVisualization() { // Renamed component for clarity
+  // State for the array values being visualized and sorted
   const [items, setItems] = useState<number[]>(initialArrayData);
+  // State to track if sorting is currently in progress (disables buttons/sliders)
   const [isSorting, setIsSorting] = useState(false);
-  const [sortSpeed, setSortSpeed] = useState(150); // Initial speed (delay in ms)
+  // State for controlling the delay (in ms) between sort steps/animations
+  const [sortSpeed, setSortSpeed] = useState(1000);
+  // State for Bubble Sort highlighting (elements being compared)
+  const [comparingIndices, setComparingIndices] = useState<number[] | null>(null);
+  // State for Selection Sort highlighting (current minimum index found)
+  const [minIndex, setMinIndex] = useState<number | null>(null);
+  // State for Selection Sort highlighting (current index being processed in outer loop)
+  const [currentIndex, setCurrentIndex] = useState<number | null>(null);
 
-  // Bubble Sort implementation adapted for this component
+
+  // --- Bubble Sort Algorithm ---
+  // Uses useCallback to memoize the function, preventing unnecessary re-creation
   const bubbleSort = useCallback(async () => {
-    setIsSorting(true);
-    let arr = [...items]; // Create a mutable copy
+    setIsSorting(true); // Disable controls
+    let arr = [...items]; // Mutable copy for sorting logic
     let n = arr.length;
     let swapped;
 
+    // Outer loop continues as long as swaps are made
     do {
       swapped = false;
+      // Inner loop for comparing adjacent elements
       for (let i = 0; i < n - 1; i++) {
+        // --- Step 1: Highlight ---
+        setComparingIndices([i, i + 1]); // Set indices to highlight
+        await new Promise(resolve => setTimeout(resolve, sortSpeed / 2)); // Pause 1: Show highlight
+
+        // --- Step 2: Compare and Swap ---
         if (arr[i] > arr[i + 1]) {
-          // Swap elements
+          // Swap logic
           [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
           swapped = true;
 
-          // Update state to visualize the step
+          // Update state to trigger animation *before* the second pause
           setItems([...arr]);
-          // Add a small delay using the sortSpeed state
-          await new Promise(resolve => setTimeout(resolve, sortSpeed));
+
+          // Pause 2a: Allow swap animation to play out
+          await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+        } else {
+          // No swap occurred
+          // Pause 2b: Maintain step timing even without a swap
+          await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
         }
+        // Highlight ([i, i+1]) remains active until the *next* iteration sets a new highlight
+        // or the sort completes and clears it.
       }
-      n--;
+      n--; // Optimization: largest element is now in its final position
     } while (swapped);
 
-    setIsSorting(false);
-  }, [items]); // Dependency array includes items
+    setComparingIndices(null); // Clear Bubble Sort highlight
+    setIsSorting(false); // Re-enable controls
+  }, [items, sortSpeed]); // Dependencies: re-run if items or speed changes
 
-  const handleSortClick = () => {
+
+  // --- Selection Sort Algorithm ---
+  const selectionSort = useCallback(async () => {
+    setIsSorting(true);
+    let arr = [...items];
+    let n = arr.length;
+
+    for (let i = 0; i < n - 1; i++) {
+      setCurrentIndex(i); // Highlight the current position we're trying to fill
+      let minIdx = i;
+      setMinIndex(minIdx); // Assume current is min initially
+      await new Promise(resolve => setTimeout(resolve, sortSpeed / 3)); // Pause 1: Show current index
+
+      // Find the minimum element in the unsorted array
+      for (let j = i + 1; j < n; j++) {
+        setComparingIndices([minIdx, j]); // Highlight comparison: current min vs element j
+        await new Promise(resolve => setTimeout(resolve, sortSpeed / 3)); // Pause 2: Show comparison
+
+        if (arr[j] < arr[minIdx]) {
+          minIdx = j; // Found a new minimum
+          setMinIndex(minIdx); // Highlight the new minimum
+          // Optional pause after finding new minimum
+          // await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+        }
+         setComparingIndices(null); // Clear comparison highlight before next iteration
+      }
+
+       // Clear comparison highlight if loop finishes
+       setComparingIndices(null);
+
+      // Swap the found minimum element with the first element (arr[i])
+      if (minIdx !== i) {
+        [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]];
+        setItems([...arr]); // Update state to trigger animation
+         // Highlight the swapped elements briefly? (Optional)
+         // setComparingIndices([i, minIdx]);
+         await new Promise(resolve => setTimeout(resolve, sortSpeed / 3)); // Pause 3: Show swap/final placement
+         // setComparingIndices(null);
+      } else {
+         // If minIdx didn't change, still pause to maintain rhythm
+         await new Promise(resolve => setTimeout(resolve, sortSpeed / 3));
+      }
+
+      setMinIndex(null); // Clear min index highlight for the next outer loop iteration
+      setCurrentIndex(null); // Clear current index highlight
+    }
+
+    // Clear all highlights at the end
+    setCurrentIndex(null);
+    setMinIndex(null);
+    setComparingIndices(null);
+    setIsSorting(false);
+  }, [items, sortSpeed]);
+
+
+  // --- Event Handlers ---
+  const handleBubbleSortClick = () => {
     if (!isSorting) {
+      // Clear other algorithm highlights before starting
+      setMinIndex(null);
+      setCurrentIndex(null);
       bubbleSort();
     }
   };
 
+   const handleSelectionSortClick = () => {
+    if (!isSorting) {
+       // Clear other algorithm highlights before starting
+      setComparingIndices(null);
+      selectionSort();
+    }
+  };
+
   const handleResetClick = () => {
-     setItems(initialArrayData);
+     setItems(initialArrayData); // Reset array to initial state
+     // Clear all highlights
+     setComparingIndices(null);
+     setMinIndex(null);
+     setCurrentIndex(null);
   }
 
   const handleSpeedChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSortSpeed(Number(event.target.value));
   };
 
+  // Removed rotation handlers
+
   return (
     // Add position relative for Html positioning context if needed
     <div style={{ height: '100vh', width: '100vw', position: 'relative' }}>
-       {/* Controls outside Canvas */}
-       <div style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 10, background: 'rgba(255,255,255,0.8)', padding: '10px', borderRadius: '5px' }}>
+       {/* UI Controls Panel - Styled with Tailwind */}
+       <div className="absolute top-2 left-2 z-10 bg-white/80 p-3 rounded-md shadow-md">
          {/* Sort/Reset Buttons */}
-         <div style={{ marginBottom: '10px' }}>
+         <div className="mb-2 flex flex-wrap gap-2">
            <button
-             onClick={handleSortClick}
+             onClick={handleBubbleSortClick}
              disabled={isSorting}
-             style={{ marginRight: '10px', padding: '8px 15px' }}
+             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
            >
-             {isSorting ? 'Sorting...' : 'Bubble Sort'}
+             Bubble Sort
+           </button>
+            <button
+             onClick={handleSelectionSortClick}
+             disabled={isSorting}
+             className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+           >
+             Selection Sort
            </button>
            <button
              onClick={handleResetClick}
              disabled={isSorting}
-             style={{ padding: '8px 15px' }}
+             className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
            >
              Reset
            </button>
          </div>
          {/* Speed Slider */}
-         <div>
-           <label htmlFor="speedSlider" style={{ marginRight: '10px', verticalAlign: 'middle' }}>Speed (Delay ms): {sortSpeed}</label>
+         <div className="flex items-center">
+           <label htmlFor="speedSlider" className="mr-2 text-sm font-medium text-gray-700">Speed (ms): {sortSpeed}</label>
            <input
              type="range"
              id="speedSlider"
-             min="10" // Min delay
-             max="1000" // Max delay
-             step="10"
+             min="1000"
+             max="2000"
+             step="50"
              value={sortSpeed}
              onChange={handleSpeedChange}
              disabled={isSorting}
-             style={{ verticalAlign: 'middle' }}
+             className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
            />
          </div>
        </div>
@@ -242,6 +280,7 @@ export default function App() {
         <Pillar />
       </Physics> */}
       <Physics>
+       {/* Removed rotation group wrapper */}
         {/* <Plane rotation={[-Math.PI / 2, 0, 0]} /> */}
 
         <Box
@@ -255,8 +294,13 @@ export default function App() {
           enableGravity={false}
         />
 
-        {/* Pass the items state to BoxRow */}
-        <BoxRow items={items} />
+        {/* Pass items and all highlighting states to BoxRow */}
+        <BoxRow
+          items={items}
+          comparingIndices={comparingIndices}
+          minIndex={minIndex}
+          currentIndex={currentIndex}
+         />
         {/* <Box position={[-4, 3, 0]} x={1} y={1} z={1}  />
           <Box position={[-2, 3, 0]} x={1} y={2} z={1} />
           <Box position={[0, 3, 0]} x={1} y={2} z={1}  /> */}
@@ -266,7 +310,7 @@ export default function App() {
 
         {/* <TorusKnot position={[4, 3, 0]} /> */}
       </Physics>
-      <OrbitControls target-y={2} /> {/* Adjust OrbitControls target */}
+      <OrbitControls target-y={2} /> {/* OrbitControls handles drag-to-rotate */}
       <Stats />
 
        {/* Alternative: Buttons inside Canvas using Html */}
