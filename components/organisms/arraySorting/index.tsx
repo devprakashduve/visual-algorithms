@@ -131,6 +131,7 @@ const initialArrayData = [5, 3, 8, 9, 10, 2, 1, 4, 6, 7];
 export default function App() {
   const [items, setItems] = useState<number[]>(initialArrayData);
   const [isSorting, setIsSorting] = useState(false);
+  const [sortSpeed, setSortSpeed] = useState(150); // Initial speed (delay in ms)
 
   // Bubble Sort implementation adapted for this component
   const bubbleSort = useCallback(async () => {
@@ -149,8 +150,8 @@ export default function App() {
 
           // Update state to visualize the step
           setItems([...arr]);
-          // Add a small delay to visualize the sorting process
-          await new Promise(resolve => setTimeout(resolve, 150)); // Adjust delay as needed
+          // Add a small delay using the sortSpeed state
+          await new Promise(resolve => setTimeout(resolve, sortSpeed));
         }
       }
       n--;
@@ -169,14 +170,52 @@ export default function App() {
      setItems(initialArrayData);
   }
 
+  const handleSpeedChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSortSpeed(Number(event.target.value));
+  };
 
   return (
     // Add position relative for Html positioning context if needed
     <div style={{ height: '100vh', width: '100vw', position: 'relative' }}>
-       {/* Buttons outside Canvas for simpler interaction */}
-       <div style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 10 }}>
-         <button
-           onClick={handleSortClick}
+       {/* Controls outside Canvas */}
+       <div style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 10, background: 'rgba(255,255,255,0.8)', padding: '10px', borderRadius: '5px' }}>
+         {/* Sort/Reset Buttons */}
+         <div style={{ marginBottom: '10px' }}>
+           <button
+             onClick={handleSortClick}
+             disabled={isSorting}
+             style={{ marginRight: '10px', padding: '8px 15px' }}
+           >
+             {isSorting ? 'Sorting...' : 'Bubble Sort'}
+           </button>
+           <button
+             onClick={handleResetClick}
+             disabled={isSorting}
+             style={{ padding: '8px 15px' }}
+           >
+             Reset
+           </button>
+         </div>
+         {/* Speed Slider */}
+         <div>
+           <label htmlFor="speedSlider" style={{ marginRight: '10px', verticalAlign: 'middle' }}>Speed (Delay ms): {sortSpeed}</label>
+           <input
+             type="range"
+             id="speedSlider"
+             min="10" // Min delay
+             max="1000" // Max delay
+             step="10"
+             value={sortSpeed}
+             onChange={handleSpeedChange}
+             disabled={isSorting}
+             style={{ verticalAlign: 'middle' }}
+           />
+         </div>
+       </div>
+
+      <Canvas shadows camera={{ position: [-2, 5, 15], fov: 50 }}> {/* Adjusted camera */}
+        {/* <spotLight
+          position={[-3, 15, 15]}
            disabled={isSorting}
            style={{ marginRight: '10px', padding: '8px 15px' }}
          >
@@ -187,13 +226,6 @@ export default function App() {
            disabled={isSorting}
            style={{ padding: '8px 15px' }}
          >
-           Reset
-         </button>
-       </div>
-
-      <Canvas shadows camera={{ position: [-2, 5, 15], fov: 50 }}> {/* Adjusted camera */}
-        {/* <spotLight
-          position={[-3, 15, 15]}
         angle={Math.PI / 4}
         penumbra={0.5}
         castShadow

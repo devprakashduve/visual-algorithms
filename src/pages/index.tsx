@@ -10,8 +10,15 @@ import { useState } from "react";
 import ArrayVisualization from "../../components/organisms/arraySimplePage";
 import BubbleShorting from "../../components/organisms/arrayBubbleSorting";
 
-import BubbleSortVisualization from "../../components/organisms/arraySorting";
-import BoxRow from "../../components/molecules/boxRow";
+// Dynamically import BubbleSortVisualization with SSR disabled
+import dynamic from 'next/dynamic';
+const BubbleSortVisualization = dynamic(
+  () => import('../../components/organisms/arraySorting'),
+  { ssr: false }
+);
+
+// Keep BoxRow import if needed elsewhere, otherwise remove if only used by BubbleSortVisualization
+// import BoxRow from "../../components/molecules/boxRow";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -37,9 +44,9 @@ export default function Home() {
       {/* <Banner imgSrc={""}/> */}
       {/* <ArrayVisualization/> */}
       {/* <BubbleShorting /> */}
-      {/* const array = [5, 3, 8, 2, 1, 4]; */}
+      {/* Render the dynamically imported component */}
       <BubbleSortVisualization />
-      {/* <BoxRow/> */}
+      {/* <BoxRow/> */} {/* Remove this if BoxRow is only used inside BubbleSortVisualization */}
       <button onClick={handleClick}>Increment Data</button>
       <div className="h-screen">
         <p>
