@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,  
+  reactStrictMode: true,
+  transpilePackages: ['@react-spring/three'], // Add this line
   webpack(config) {
     config.module.rules.push({
       test: /\.svg$/i,

@@ -1,16 +1,19 @@
-import { Stats, OrbitControls, useGLTF } from "@react-three/drei";
+import { Stats, OrbitControls, Html } from "@react-three/drei"; // Import Html
 import { Canvas } from "@react-three/fiber";
-import { useRef } from "react";
+import { useRef, useState, useCallback } from "react"; // Import useState, useCallback
 import { Physics, PlaneProps, useBox, usePlane } from "@react-three/cannon";
+import * as THREE from 'three';
 
 import Box from "../../atoms/box";
 
 import BoxRow from "../../molecules/boxRow";
 
 function Plane(props: PlaneProps) {
-  const [ref] = usePlane(() => ({ mass: 0, ...props }), useRef());
+  // Explicitly type the ref for a Mesh object
+  const [ref] = usePlane(() => ({ mass: 0, ...props }), useRef<THREE.Mesh>(null));
   return (
-    <mesh ref={ref} receiveShadow>
+    // Ensure the ref type matches the mesh element
+    <mesh ref={ref as React.Ref<THREE.Mesh>} receiveShadow>
       <planeGeometry args={[25, 25]} />
       <meshStandardMaterial />
     </mesh>
@@ -98,7 +101,8 @@ const Base: React.FC = () => {
   }));
 
   return (
-    <mesh ref={ref} receiveShadow>
+    // Cast the ref to the correct type for the mesh
+    <mesh ref={ref as React.Ref<THREE.Mesh>} receiveShadow>
       <boxBufferGeometry args={[10, 1, 10]} />
       <meshStandardMaterial color="gray" />
     </mesh>
@@ -113,18 +117,83 @@ const Pillar: React.FC = () => {
   }));
 
   return (
-    <mesh ref={ref} castShadow>
+    // Cast the ref to the correct type for the mesh
+    <mesh ref={ref as React.Ref<THREE.Mesh>} castShadow>
       <boxBufferGeometry args={[1, 4, 1]} />
       <meshStandardMaterial color="red" />
     </mesh>
   );
 };
 
+// Initial data for the boxes
+const initialArrayData = [5, 3, 8, 9, 10, 2, 1, 4, 6, 7];
+
 export default function App() {
+  const [items, setItems] = useState<number[]>(initialArrayData);
+  const [isSorting, setIsSorting] = useState(false);
+
+  // Bubble Sort implementation adapted for this component
+  const bubbleSort = useCallback(async () => {
+    setIsSorting(true);
+    let arr = [...items]; // Create a mutable copy
+    let n = arr.length;
+    let swapped;
+
+    do {
+      swapped = false;
+      for (let i = 0; i < n - 1; i++) {
+        if (arr[i] > arr[i + 1]) {
+          // Swap elements
+          [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
+          swapped = true;
+
+          // Update state to visualize the step
+          setItems([...arr]);
+          // Add a small delay to visualize the sorting process
+          await new Promise(resolve => setTimeout(resolve, 150)); // Adjust delay as needed
+        }
+      }
+      n--;
+    } while (swapped);
+
+    setIsSorting(false);
+  }, [items]); // Dependency array includes items
+
+  const handleSortClick = () => {
+    if (!isSorting) {
+      bubbleSort();
+    }
+  };
+
+  const handleResetClick = () => {
+     setItems(initialArrayData);
+  }
+
+
   return (
-    <Canvas shadows camera={{ position: [-2, 2, 10] }}>
-      {/* <spotLight
-        position={[-3, 15, 15]}
+    // Add position relative for Html positioning context if needed
+    <div style={{ height: '100vh', width: '100vw', position: 'relative' }}>
+       {/* Buttons outside Canvas for simpler interaction */}
+       <div style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 10 }}>
+         <button
+           onClick={handleSortClick}
+           disabled={isSorting}
+           style={{ marginRight: '10px', padding: '8px 15px' }}
+         >
+           {isSorting ? 'Sorting...' : 'Bubble Sort'}
+         </button>
+         <button
+           onClick={handleResetClick}
+           disabled={isSorting}
+           style={{ padding: '8px 15px' }}
+         >
+           Reset
+         </button>
+       </div>
+
+      <Canvas shadows camera={{ position: [-2, 5, 15], fov: 50 }}> {/* Adjusted camera */}
+        {/* <spotLight
+          position={[-3, 15, 15]}
         angle={Math.PI / 4}
         penumbra={0.5}
         castShadow
@@ -154,7 +223,8 @@ export default function App() {
           enableGravity={false}
         />
 
-        <BoxRow />
+        {/* Pass the items state to BoxRow */}
+        <BoxRow items={items} />
         {/* <Box position={[-4, 3, 0]} x={1} y={1} z={1}  />
           <Box position={[-2, 3, 0]} x={1} y={2} z={1} />
           <Box position={[0, 3, 0]} x={1} y={2} z={1}  /> */}
@@ -164,8 +234,29 @@ export default function App() {
 
         {/* <TorusKnot position={[4, 3, 0]} /> */}
       </Physics>
-      <OrbitControls target-y={0} />
+      <OrbitControls target-y={2} /> {/* Adjust OrbitControls target */}
       <Stats />
+
+       {/* Alternative: Buttons inside Canvas using Html */}
+       {/* <Html position={[-5, 5, 0]}>
+         <div style={{ background: 'rgba(255, 255, 255, 0.7)', padding: '10px', borderRadius: '5px' }}>
+           <button
+             onClick={handleSortClick}
+             disabled={isSorting}
+             style={{ marginRight: '10px', padding: '8px 15px' }}
+           >
+             {isSorting ? 'Sorting...' : 'Bubble Sort'}
+           </button>
+           <button
+             onClick={handleResetClick}
+             disabled={isSorting}
+             style={{ padding: '8px 15px' }}
+           >
+             Reset
+           </button>
+         </div>
+       </Html> */}
     </Canvas>
+   </div> // Close the wrapper div
   );
 }
