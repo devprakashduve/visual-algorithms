@@ -4,11 +4,12 @@ import { useRef, useState, useCallback } from "react"; // Import useState, useCa
 import { Physics, PlaneProps, useBox, usePlane } from "@react-three/cannon";
 import * as THREE from 'three';
 
-import Box from "../../atoms/box";
+ import Box from "../../atoms/box";
 
-import BoxRow from "../../molecules/boxRow";
+ import BoxRow from "../../molecules/boxRow";
+ import AlgorithmCodeDisplay from "../../molecules/AlgorithmCodeDisplay"; // Import the new component
 
-function Plane(props: PlaneProps) {
+ function Plane(props: PlaneProps) {
   // Explicitly type the ref for a Mesh object
   const [ref] = usePlane(() => ({ mass: 0, ...props }), useRef<THREE.Mesh>(null));
   return (
@@ -71,50 +72,92 @@ export default function ArraySortingVisualization() { // Renamed component for c
   const [comparingIndices, setComparingIndices] = useState<number[] | null>(null);
   // State for Selection Sort highlighting (current minimum index found)
   const [minIndex, setMinIndex] = useState<number | null>(null);
-  // State for Selection Sort highlighting (current index being processed in outer loop)
-  const [currentIndex, setCurrentIndex] = useState<number | null>(null);
+   // State for Selection Sort highlighting (current index being processed in outer loop)
+   const [currentIndex, setCurrentIndex] = useState<number | null>(null);
+   // State to track the currently active algorithm for code display
+   const [activeAlgorithm, setActiveAlgorithm] = useState<'bubble' | 'selection' | null>(null);
+   // State to track the line number to highlight in the code display
+   const [activeCodeLine, setActiveCodeLine] = useState<number | null>(null);
 
 
-  // --- Bubble Sort Algorithm ---
-  // Uses useCallback to memoize the function, preventing unnecessary re-creation
-  const bubbleSort = useCallback(async () => {
-    setIsSorting(true); // Disable controls
-    let arr = [...items]; // Mutable copy for sorting logic
-    let n = arr.length;
-    let swapped;
+   // --- Bubble Sort Algorithm ---
+   // Uses useCallback to memoize the function, preventing unnecessary re-creation
+   const bubbleSort = useCallback(async () => {
+     setIsSorting(true); // Disable controls
+     setActiveAlgorithm('bubble'); // Set active algorithm for display
+     setActiveCodeLine(1); // Highlight: async function bubbleSort(arr) {
+     await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // Small delay to show line 1
 
-    // Outer loop continues as long as swaps are made
-    do {
-      swapped = false;
-      // Inner loop for comparing adjacent elements
-      for (let i = 0; i < n - 1; i++) {
-        // --- Step 1: Highlight ---
-        setComparingIndices([i, i + 1]); // Set indices to highlight
-        await new Promise(resolve => setTimeout(resolve, sortSpeed / 2)); // Pause 1: Show highlight
+     let arr = [...items]; // Mutable copy for sorting logic
+     setActiveCodeLine(2); // Highlight: let n = arr.length;
+     await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+     let n = arr.length;
 
-        // --- Step 2: Compare and Swap ---
-        if (arr[i] > arr[i + 1]) {
-          // Swap logic
-          [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
-          swapped = true;
+     let swapped; // Declare swapped once
+     setActiveCodeLine(3); // Highlight: let swapped;
+     await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
 
-          // Update state to trigger animation *before* the second pause
-          setItems([...arr]);
+     // Outer loop continues as long as swaps are made
+     do {
+       setActiveCodeLine(4); // Highlight: do {
+       await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+       swapped = false;
+       setActiveCodeLine(5); // Highlight: swapped = false;
+       await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
 
-          // Pause 2a: Allow swap animation to play out
-          await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
-        } else {
-          // No swap occurred
-          // Pause 2b: Maintain step timing even without a swap
-          await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
-        }
-        // Highlight ([i, i+1]) remains active until the *next* iteration sets a new highlight
-        // or the sort completes and clears it.
-      }
-      n--; // Optimization: largest element is now in its final position
-    } while (swapped);
+       // Inner loop for comparing adjacent elements
+       for (let i = 0; i < n - 1; i++) {
+         setActiveCodeLine(6); // Highlight: for (...)
+         await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+
+         // --- Step 1: Highlight ---
+         setComparingIndices([i, i + 1]); // Set indices to highlight
+         setActiveCodeLine(7); // Highlight: // Highlight comparison [i, i+1]
+         await new Promise(resolve => setTimeout(resolve, sortSpeed / 2)); // Pause 1: Show highlight
+
+         // --- Step 2: Compare and Swap ---
+         setActiveCodeLine(8); // Highlight: if (arr[i] > arr[i + 1])
+         await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+         if (arr[i] > arr[i + 1]) {
+           // Swap logic
+           setActiveCodeLine(10); // Highlight: // Swap elements
+           await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+           [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
+
+           swapped = true;
+           setActiveCodeLine(11); // Highlight: swapped = true;
+           await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+
+           // Update state to trigger animation *before* the second pause
+           setActiveCodeLine(12); // Highlight: // Update visualization
+           setItems([...arr]);
+           await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+
+           // Pause 2a: Allow swap animation to play out
+           setActiveCodeLine(14); // Highlight: // Pause for visualization (implicit after swap)
+           await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+         } else {
+           // No swap occurred
+           // Pause 2b: Maintain step timing even without a swap
+           setActiveCodeLine(14); // Highlight: // Pause for visualization (implicit no swap)
+           await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+         }
+         // Highlight ([i, i+1]) remains active until the *next* iteration sets a new highlight
+         // or the sort completes and clears it.
+       }
+       n--; // Optimization: largest element is now in its final position
+       setActiveCodeLine(16); // Highlight: n--;
+       await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+     } while (swapped);
+     setActiveCodeLine(17); // Highlight: } while (swapped);
+     await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
 
     setComparingIndices(null); // Clear Bubble Sort highlight
+    setActiveCodeLine(18); // Highlight: // Clear highlights
+    await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+
+    setActiveAlgorithm(null); // Clear active algorithm
+    setActiveCodeLine(null); // Clear line highlight
     setIsSorting(false); // Re-enable controls
   }, [items, sortSpeed]); // Dependencies: re-run if items or speed changes
 
@@ -122,53 +165,96 @@ export default function ArraySortingVisualization() { // Renamed component for c
   // --- Selection Sort Algorithm ---
   const selectionSort = useCallback(async () => {
     setIsSorting(true);
+    setActiveAlgorithm('selection');
+    setActiveCodeLine(1); // Highlight: async function selectionSort(arr) {
+    await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+
     let arr = [...items];
+    setActiveCodeLine(2); // Highlight: let n = arr.length;
+    await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
     let n = arr.length;
 
     for (let i = 0; i < n - 1; i++) {
+      setActiveCodeLine(3); // Highlight: for (let i = 0; ...)
+      await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+
       setCurrentIndex(i); // Highlight the current position we're trying to fill
+      setActiveCodeLine(4); // Highlight: // Highlight current index i
+      await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+
       let minIdx = i;
+      setActiveCodeLine(5); // Highlight: let minIdx = i;
+      await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+
       setMinIndex(minIdx); // Assume current is min initially
+      setActiveCodeLine(6); // Highlight: // Highlight minIdx
       await new Promise(resolve => setTimeout(resolve, sortSpeed / 3)); // Pause 1: Show current index
 
       // Find the minimum element in the unsorted array
       for (let j = i + 1; j < n; j++) {
+        setActiveCodeLine(7); // Highlight: for (let j = i + 1; ...)
+        await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+
         setComparingIndices([minIdx, j]); // Highlight comparison: current min vs element j
+        setActiveCodeLine(8); // Highlight: // Highlight comparison [minIdx, j]
         await new Promise(resolve => setTimeout(resolve, sortSpeed / 3)); // Pause 2: Show comparison
 
+        setActiveCodeLine(9); // Highlight: if (arr[j] < arr[minIdx])
+        await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
         if (arr[j] < arr[minIdx]) {
           minIdx = j; // Found a new minimum
+          setActiveCodeLine(10); // Highlight: minIdx = j;
+          await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+
           setMinIndex(minIdx); // Highlight the new minimum
-          // Optional pause after finding new minimum
-          // await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+          setActiveCodeLine(11); // Highlight: // Highlight new minIdx
+          await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
         }
          setComparingIndices(null); // Clear comparison highlight before next iteration
+         setActiveCodeLine(13); // Highlight: // Clear comparison highlight
+         await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
       }
-
-       // Clear comparison highlight if loop finishes
-       setComparingIndices(null);
+       setActiveCodeLine(15); // Highlight: // Clear comparison highlight (end of inner loop)
+       setComparingIndices(null); // Clear comparison highlight if loop finishes
+       await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
 
       // Swap the found minimum element with the first element (arr[i])
+      setActiveCodeLine(16); // Highlight: if (minIdx !== i)
+      await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
       if (minIdx !== i) {
+        setActiveCodeLine(18); // Highlight: // Swap elements arr[i] and arr[minIdx]
+        await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
         [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]];
+
+        setActiveCodeLine(19); // Highlight: // Update visualization
         setItems([...arr]); // Update state to trigger animation
+        await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+
          // Highlight the swapped elements briefly? (Optional)
          // setComparingIndices([i, minIdx]);
+         setActiveCodeLine(21); // Highlight: // Pause for visualization
          await new Promise(resolve => setTimeout(resolve, sortSpeed / 3)); // Pause 3: Show swap/final placement
          // setComparingIndices(null);
       } else {
          // If minIdx didn't change, still pause to maintain rhythm
+         setActiveCodeLine(21); // Highlight: // Pause for visualization (no swap)
          await new Promise(resolve => setTimeout(resolve, sortSpeed / 3));
       }
 
       setMinIndex(null); // Clear min index highlight for the next outer loop iteration
       setCurrentIndex(null); // Clear current index highlight
+      setActiveCodeLine(22); // Highlight: // Clear min/current highlights
+      await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
     }
+    setActiveCodeLine(24); // Highlight: // Clear highlights (end of outer loop)
+    await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
 
     // Clear all highlights at the end
     setCurrentIndex(null);
     setMinIndex(null);
     setComparingIndices(null);
+    setActiveAlgorithm(null);
+    setActiveCodeLine(null);
     setIsSorting(false);
   }, [items, sortSpeed]);
 
@@ -179,6 +265,7 @@ export default function ArraySortingVisualization() { // Renamed component for c
       // Clear other algorithm highlights before starting
       setMinIndex(null);
       setCurrentIndex(null);
+      setActiveCodeLine(null); // Clear code line highlight
       bubbleSort();
     }
   };
@@ -187,6 +274,7 @@ export default function ArraySortingVisualization() { // Renamed component for c
     if (!isSorting) {
        // Clear other algorithm highlights before starting
       setComparingIndices(null);
+      setActiveCodeLine(null); // Clear code line highlight
       selectionSort();
     }
   };
@@ -197,6 +285,8 @@ export default function ArraySortingVisualization() { // Renamed component for c
      setComparingIndices(null);
      setMinIndex(null);
      setCurrentIndex(null);
+     setActiveAlgorithm(null); // Clear displayed algorithm
+     setActiveCodeLine(null); // Clear code line highlight
   }
 
   const handleSpeedChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -209,7 +299,7 @@ export default function ArraySortingVisualization() { // Renamed component for c
     // Add position relative for Html positioning context if needed
     <div style={{ height: '100vh', width: '100vw', position: 'relative' }}>
        {/* UI Controls Panel - Styled with Tailwind */}
-       <div className="absolute top-2 left-2 z-10 bg-white/80 p-3 rounded-md shadow-md">
+       <div className="absolute top-2 left-2 z-10 bg-white/80 p-3 rounded-md shadow-md max-w-xs"> {/* Added max-width */}
          {/* Sort/Reset Buttons */}
          <div className="mb-2 flex flex-wrap gap-2">
            <button
@@ -240,7 +330,7 @@ export default function ArraySortingVisualization() { // Renamed component for c
            <input
              type="range"
              id="speedSlider"
-             min="1000"
+             min="100"  // Reduced min speed for faster visualization option
              max="2000"
              step="50"
              value={sortSpeed}
@@ -250,6 +340,9 @@ export default function ArraySortingVisualization() { // Renamed component for c
            />
          </div>
        </div>
+
+       {/* Algorithm Code Display Panel */}
+       <AlgorithmCodeDisplay algorithm={activeAlgorithm} currentLine={activeCodeLine} />
 
       <Canvas shadows camera={{ position: [-2, 5, 15], fov: 50 }}> {/* Adjusted camera */}
         {/* <spotLight
