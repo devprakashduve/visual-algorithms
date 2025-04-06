@@ -19,20 +19,26 @@ const VALUE_LABEL_Y_OFFSET = 0.5; // Y offset for the static value label box
 
 // Highlight Colors
 const DEFAULT_BAR_COLOR = "hsl(210, 100%, 50%)"; // Blue
-const COMPARE_COLOR = "hsl(0, 100%, 50%)"; // Red (Bubble Sort comparison)
-const MIN_INDEX_COLOR = "hsl(120, 100%, 35%)"; // Green (Selection Sort min found)
-const CURRENT_INDEX_COLOR = "hsl(60, 100%, 50%)"; // Yellow (Selection Sort current index)
-// ---
-
-// Define props interface
-interface BoxRowProps {
-  items: number[];
-  comparingIndices?: number[] | null; // For Bubble Sort comparison
-  minIndex?: number | null;          // For Selection Sort minimum found
-  currentIndex?: number | null;      // For Selection Sort current index
-}
-
-const BoxRow: React.FC<BoxRowProps> = ({ items, comparingIndices, minIndex, currentIndex }) => {
+ const COMPARE_COLOR = "hsl(0, 100%, 50%)"; // Red (Comparison highlight)
+ const MIN_INDEX_COLOR = "hsl(120, 100%, 35%)"; // Green (Selection Sort min found)
+ const CURRENT_INDEX_COLOR = "hsl(60, 100%, 50%)"; // Yellow (Selection/Insertion current index)
+ const KEY_COLOR = "hsl(280, 100%, 50%)"; // Purple (Insertion Sort key)
+ const MERGE_RANGE_COLOR = "hsl(30, 100%, 50%)"; // Orange (Merge Sort range)
+ const PIVOT_COLOR = "hsl(330, 100%, 50%)"; // Pink (Quick Sort pivot)
+ // ---
+ 
+ // Define props interface
+ interface BoxRowProps {
+   items: number[];
+   comparingIndices?: number[] | null; // For comparison highlight
+   minIndex?: number | null;          // For Selection Sort minimum found
+   currentIndex?: number | null;      // For Selection/Insertion Sort current index
+   keyIndex?: number | null;          // For Insertion Sort key
+   mergeRange?: { left: number; right: number } | null; // For Merge Sort range
+   pivotIndex?: number | null;        // For Quick Sort pivot
+ }
+ 
+ const BoxRow: React.FC<BoxRowProps> = ({ items, comparingIndices, minIndex, currentIndex, keyIndex, mergeRange, pivotIndex }) => {
   // Use useSprings to manage animations for each item
   const springs = useSprings(
     items.length,
@@ -57,18 +63,27 @@ const BoxRow: React.FC<BoxRowProps> = ({ items, comparingIndices, minIndex, curr
       {springs.map((props, i) => {
         const itemValue = items[i]; // Current value for static display
         const indexValue = i; // Current index for static display
-
-        // Determine highlight state and color
-        let barColor = DEFAULT_BAR_COLOR;
-        if (currentIndex === i) {
-          barColor = CURRENT_INDEX_COLOR; // Highest priority: current index in Selection Sort
-        } else if (minIndex === i) {
-          barColor = MIN_INDEX_COLOR; // Next priority: minimum index found in Selection Sort
-        } else if (comparingIndices?.includes(i)) {
-          barColor = COMPARE_COLOR; // Lowest priority: comparison highlight (Bubble or Selection)
-        }
-
-        return (
+ 
+ 
+         // Determine highlight state and color (with priority)
+         let barColor = DEFAULT_BAR_COLOR;
+         const isInMergeRange = mergeRange && i >= mergeRange.left && i <= mergeRange.right;
+ 
+         if (pivotIndex === i) {
+           barColor = PIVOT_COLOR; // 1. Quick Sort Pivot
+         } else if (keyIndex === i) {
+           barColor = KEY_COLOR; // 2. Insertion sort key
+         } else if (currentIndex === i) {
+           barColor = CURRENT_INDEX_COLOR; // 3. Selection/Insertion current index
+         } else if (minIndex === i) {
+           barColor = MIN_INDEX_COLOR; // 4. Selection sort min index
+         } else if (comparingIndices?.includes(i)) {
+           barColor = COMPARE_COLOR; // 5. Comparison highlight
+         } else if (isInMergeRange) {
+           barColor = MERGE_RANGE_COLOR; // 6. Merge sort range
+         }
+ 
+         return (
           // Each item is an animated group, its 'position' prop animates horizontally during swaps
           <animated.group key={`box-group-${i}`} position={props.position}>
             {/* Static background box */}

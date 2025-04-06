@@ -68,225 +68,332 @@ export default function ArraySortingVisualization() { // Renamed component for c
   const [isSorting, setIsSorting] = useState(false);
   // State for controlling the delay (in ms) between sort steps/animations
   const [sortSpeed, setSortSpeed] = useState(1000);
-  // State for Bubble Sort highlighting (elements being compared)
+  // State for comparison highlighting (used by multiple sorts)
   const [comparingIndices, setComparingIndices] = useState<number[] | null>(null);
   // State for Selection Sort highlighting (current minimum index found)
   const [minIndex, setMinIndex] = useState<number | null>(null);
-   // State for Selection Sort highlighting (current index being processed in outer loop)
+   // State for Selection Sort / Insertion Sort current index highlighting
    const [currentIndex, setCurrentIndex] = useState<number | null>(null);
+   // State for Insertion Sort key highlighting
+   const [keyIndex, setKeyIndex] = useState<number | null>(null);
+   // State for Merge Sort highlighting (range being merged)
+   const [mergeRange, setMergeRange] = useState<{ left: number; right: number } | null>(null);
+   // State for Quick Sort pivot highlighting
+   const [pivotIndex, setPivotIndex] = useState<number | null>(null);
    // State to track the currently active algorithm for code display
-   const [activeAlgorithm, setActiveAlgorithm] = useState<'bubble' | 'selection' | null>(null);
+   const [activeAlgorithm, setActiveAlgorithm] = useState<'bubble' | 'selection' | 'insertion' | 'merge' | 'quick' | null>(null);
    // State to track the line number to highlight in the code display
    const [activeCodeLine, setActiveCodeLine] = useState<number | null>(null);
 
 
    // --- Bubble Sort Algorithm ---
-   // Uses useCallback to memoize the function, preventing unnecessary re-creation
    const bubbleSort = useCallback(async () => {
-     setIsSorting(true); // Disable controls
-     setActiveAlgorithm('bubble'); // Set active algorithm for display
-     setActiveCodeLine(1); // Highlight: async function bubbleSort(arr) {
-     await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // Small delay to show line 1
-
-     let arr = [...items]; // Mutable copy for sorting logic
-     setActiveCodeLine(2); // Highlight: let n = arr.length;
-     await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+     setIsSorting(true); setActiveAlgorithm('bubble');
+     setActiveCodeLine(1); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+     let arr = [...items];
+     setActiveCodeLine(2); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
      let n = arr.length;
-
-     let swapped; // Declare swapped once
-     setActiveCodeLine(3); // Highlight: let swapped;
-     await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
-
-     // Outer loop continues as long as swaps are made
+     let swapped;
+     setActiveCodeLine(3); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
      do {
-       setActiveCodeLine(4); // Highlight: do {
-       await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+       setActiveCodeLine(4); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
        swapped = false;
-       setActiveCodeLine(5); // Highlight: swapped = false;
-       await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
-
-       // Inner loop for comparing adjacent elements
+       setActiveCodeLine(5); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
        for (let i = 0; i < n - 1; i++) {
-         setActiveCodeLine(6); // Highlight: for (...)
-         await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
-
-         // --- Step 1: Highlight ---
-         setComparingIndices([i, i + 1]); // Set indices to highlight
-         setActiveCodeLine(7); // Highlight: // Highlight comparison [i, i+1]
-         await new Promise(resolve => setTimeout(resolve, sortSpeed / 2)); // Pause 1: Show highlight
-
-         // --- Step 2: Compare and Swap ---
-         setActiveCodeLine(8); // Highlight: if (arr[i] > arr[i + 1])
-         await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+         setActiveCodeLine(6); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+         setComparingIndices([i, i + 1]);
+         setActiveCodeLine(7); await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+         setActiveCodeLine(8); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
          if (arr[i] > arr[i + 1]) {
-           // Swap logic
-           setActiveCodeLine(10); // Highlight: // Swap elements
-           await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+           setActiveCodeLine(10); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
            [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
-
            swapped = true;
-           setActiveCodeLine(11); // Highlight: swapped = true;
-           await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
-
-           // Update state to trigger animation *before* the second pause
-           setActiveCodeLine(12); // Highlight: // Update visualization
+           setActiveCodeLine(11); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+           setActiveCodeLine(12);
            setItems([...arr]);
            await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
-
-           // Pause 2a: Allow swap animation to play out
-           setActiveCodeLine(14); // Highlight: // Pause for visualization (implicit after swap)
-           await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+           setActiveCodeLine(14); await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
          } else {
-           // No swap occurred
-           // Pause 2b: Maintain step timing even without a swap
-           setActiveCodeLine(14); // Highlight: // Pause for visualization (implicit no swap)
-           await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+           setActiveCodeLine(14); await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
          }
-         // Highlight ([i, i+1]) remains active until the *next* iteration sets a new highlight
-         // or the sort completes and clears it.
+         setComparingIndices(null);
        }
-       n--; // Optimization: largest element is now in its final position
-       setActiveCodeLine(16); // Highlight: n--;
-       await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+       n--;
+       setActiveCodeLine(16); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
      } while (swapped);
-     setActiveCodeLine(17); // Highlight: } while (swapped);
-     await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
-
-    setComparingIndices(null); // Clear Bubble Sort highlight
-    setActiveCodeLine(18); // Highlight: // Clear highlights
-    await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
-
-    setActiveAlgorithm(null); // Clear active algorithm
-    setActiveCodeLine(null); // Clear line highlight
-    setIsSorting(false); // Re-enable controls
-  }, [items, sortSpeed]); // Dependencies: re-run if items or speed changes
+     setActiveCodeLine(17); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    setComparingIndices(null);
+    setActiveCodeLine(18); await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+    setActiveAlgorithm(null); setActiveCodeLine(null); setIsSorting(false);
+  }, [items, sortSpeed]);
 
 
   // --- Selection Sort Algorithm ---
   const selectionSort = useCallback(async () => {
-    setIsSorting(true);
-    setActiveAlgorithm('selection');
-    setActiveCodeLine(1); // Highlight: async function selectionSort(arr) {
-    await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
-
+    setIsSorting(true); setActiveAlgorithm('selection');
+    setActiveCodeLine(1); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
     let arr = [...items];
-    setActiveCodeLine(2); // Highlight: let n = arr.length;
-    await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    setActiveCodeLine(2); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
     let n = arr.length;
-
     for (let i = 0; i < n - 1; i++) {
-      setActiveCodeLine(3); // Highlight: for (let i = 0; ...)
-      await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
-
-      setCurrentIndex(i); // Highlight the current position we're trying to fill
-      setActiveCodeLine(4); // Highlight: // Highlight current index i
-      await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
-
+      setActiveCodeLine(3); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+      setCurrentIndex(i);
+      setActiveCodeLine(4); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
       let minIdx = i;
-      setActiveCodeLine(5); // Highlight: let minIdx = i;
-      await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
-
-      setMinIndex(minIdx); // Assume current is min initially
-      setActiveCodeLine(6); // Highlight: // Highlight minIdx
-      await new Promise(resolve => setTimeout(resolve, sortSpeed / 3)); // Pause 1: Show current index
-
-      // Find the minimum element in the unsorted array
+      setActiveCodeLine(5); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+      setMinIndex(minIdx);
+      setActiveCodeLine(6); await new Promise(resolve => setTimeout(resolve, sortSpeed / 3));
       for (let j = i + 1; j < n; j++) {
-        setActiveCodeLine(7); // Highlight: for (let j = i + 1; ...)
-        await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
-
-        setComparingIndices([minIdx, j]); // Highlight comparison: current min vs element j
-        setActiveCodeLine(8); // Highlight: // Highlight comparison [minIdx, j]
-        await new Promise(resolve => setTimeout(resolve, sortSpeed / 3)); // Pause 2: Show comparison
-
-        setActiveCodeLine(9); // Highlight: if (arr[j] < arr[minIdx])
-        await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+        setActiveCodeLine(7); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+        setComparingIndices([minIdx, j]);
+        setActiveCodeLine(8); await new Promise(resolve => setTimeout(resolve, sortSpeed / 3));
+        setActiveCodeLine(9); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
         if (arr[j] < arr[minIdx]) {
-          minIdx = j; // Found a new minimum
-          setActiveCodeLine(10); // Highlight: minIdx = j;
-          await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
-
-          setMinIndex(minIdx); // Highlight the new minimum
-          setActiveCodeLine(11); // Highlight: // Highlight new minIdx
-          await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+          minIdx = j;
+          setActiveCodeLine(10); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+          setMinIndex(minIdx);
+          setActiveCodeLine(11); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
         }
-         setComparingIndices(null); // Clear comparison highlight before next iteration
-         setActiveCodeLine(13); // Highlight: // Clear comparison highlight
-         await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+         setComparingIndices(null);
+         setActiveCodeLine(13); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
       }
-       setActiveCodeLine(15); // Highlight: // Clear comparison highlight (end of inner loop)
-       setComparingIndices(null); // Clear comparison highlight if loop finishes
+       setActiveCodeLine(15);
+       setComparingIndices(null);
        await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
-
-      // Swap the found minimum element with the first element (arr[i])
-      setActiveCodeLine(16); // Highlight: if (minIdx !== i)
-      await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+      setActiveCodeLine(16); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
       if (minIdx !== i) {
-        setActiveCodeLine(18); // Highlight: // Swap elements arr[i] and arr[minIdx]
-        await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+        setActiveCodeLine(18); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
         [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]];
-
-        setActiveCodeLine(19); // Highlight: // Update visualization
-        setItems([...arr]); // Update state to trigger animation
+        setActiveCodeLine(19);
+        setItems([...arr]);
         await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
-
-         // Highlight the swapped elements briefly? (Optional)
-         // setComparingIndices([i, minIdx]);
-         setActiveCodeLine(21); // Highlight: // Pause for visualization
-         await new Promise(resolve => setTimeout(resolve, sortSpeed / 3)); // Pause 3: Show swap/final placement
-         // setComparingIndices(null);
+         setActiveCodeLine(21); await new Promise(resolve => setTimeout(resolve, sortSpeed / 3));
       } else {
-         // If minIdx didn't change, still pause to maintain rhythm
-         setActiveCodeLine(21); // Highlight: // Pause for visualization (no swap)
-         await new Promise(resolve => setTimeout(resolve, sortSpeed / 3));
+         setActiveCodeLine(21); await new Promise(resolve => setTimeout(resolve, sortSpeed / 3));
       }
+      setMinIndex(null);
+      setCurrentIndex(null);
+      setActiveCodeLine(22); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    }
+    setActiveCodeLine(24); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    setCurrentIndex(null); setMinIndex(null); setComparingIndices(null);
+    setActiveAlgorithm(null); setActiveCodeLine(null); setIsSorting(false);
+  }, [items, sortSpeed]);
 
-      setMinIndex(null); // Clear min index highlight for the next outer loop iteration
-      setCurrentIndex(null); // Clear current index highlight
-      setActiveCodeLine(22); // Highlight: // Clear min/current highlights
+  // --- Insertion Sort Algorithm ---
+  const insertionSort = useCallback(async () => {
+    setIsSorting(true); setActiveAlgorithm('insertion');
+    setActiveCodeLine(1); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    let arr = [...items];
+    setActiveCodeLine(2); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    let n = arr.length;
+    for (let i = 1; i < n; i++) {
+      setActiveCodeLine(3); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+      let key = arr[i];
+      setKeyIndex(i);
+      setActiveCodeLine(4); await new Promise(resolve => setTimeout(resolve, sortSpeed / 3));
+      let j = i - 1;
+      setActiveCodeLine(5); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+      setActiveCodeLine(7); await new Promise(resolve => setTimeout(resolve, sortSpeed / 3));
+      while (j >= 0 && arr[j] > key) {
+        setComparingIndices([j, j + 1]);
+        setActiveCodeLine(9);
+        arr[j + 1] = arr[j];
+        setItems([...arr]);
+        await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+        j = j - 1;
+        setActiveCodeLine(10); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+        setComparingIndices(null);
+        setActiveCodeLine(7); await new Promise(resolve => setTimeout(resolve, sortSpeed / 3));
+      }
+      setComparingIndices(null);
+      setActiveCodeLine(14);
+      arr[j + 1] = key;
+      setItems([...arr]);
+      setKeyIndex(null);
+      await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+    }
+    setActiveCodeLine(18); await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+    setComparingIndices(null); setCurrentIndex(null); setMinIndex(null); setKeyIndex(null);
+    setActiveAlgorithm(null); setActiveCodeLine(null); setIsSorting(false);
+  }, [items, sortSpeed]);
+
+  // --- Merge Sort Algorithm ---
+  const merge = async (arr: number[], left: number, mid: number, right: number) => {
+    setActiveCodeLine(11); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    setMergeRange({ left, right });
+    const n1 = mid - left + 1; const n2 = right - mid;
+    setActiveCodeLine(12); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    let L = new Array(n1); let R = new Array(n2);
+    setActiveCodeLine(13); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    for (let i = 0; i < n1; i++) L[i] = arr[left + i];
+    for (let j = 0; j < n2; j++) R[j] = arr[mid + 1 + j];
+    setActiveCodeLine(15); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    let i = 0, j = 0, k = left;
+    while (i < n1 && j < n2) {
+      setActiveCodeLine(16); setComparingIndices([left + i, mid + 1 + j]);
+      await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+      setActiveCodeLine(17); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+      if (L[i] <= R[j]) {
+        setActiveCodeLine(18); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+        arr[k] = L[i]; i++;
+      } else {
+        setActiveCodeLine(20); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+        arr[k] = R[j]; j++;
+      }
+      setActiveCodeLine(22); setItems([...arr]); setComparingIndices(null);
+      await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+      k++; setActiveCodeLine(23); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    }
+    setActiveCodeLine(24); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    while (i < n1) { arr[k] = L[i]; setItems([...arr]); await new Promise(resolve => setTimeout(resolve, sortSpeed / 2)); i++; k++; }
+    while (j < n2) { arr[k] = R[j]; setItems([...arr]); await new Promise(resolve => setTimeout(resolve, sortSpeed / 2)); j++; k++; }
+    setActiveCodeLine(26); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    setMergeRange(null);
+    setActiveCodeLine(28); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+  };
+
+  const mergeSortRecursive = async (arr: number[], l: number, r: number) => {
+    setActiveCodeLine(1); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    setActiveCodeLine(2); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    if (l >= r) { setActiveCodeLine(3); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); return; }
+    setActiveCodeLine(5); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    const m = l + Math.floor((r - l) / 2);
+    setActiveCodeLine(6); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    await mergeSortRecursive(arr, l, m);
+    setActiveCodeLine(7); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    await mergeSortRecursive(arr, m + 1, r);
+    setActiveCodeLine(8); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    await merge(arr, l, m, r);
+    setActiveCodeLine(9); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+  };
+
+  const startMergeSort = useCallback(async () => {
+    setIsSorting(true); setActiveAlgorithm('merge');
+    let arr = [...items];
+    await mergeSortRecursive(arr, 0, arr.length - 1);
+    setActiveAlgorithm(null); setActiveCodeLine(null); setIsSorting(false);
+  }, [items, sortSpeed]);
+
+  // --- Quick Sort Algorithm ---
+  const partition = async (arr: number[], low: number, high: number): Promise<number> => {
+    setActiveCodeLine(10); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    let pivot = arr[high];
+    setActiveCodeLine(11); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    setPivotIndex(high); // Highlight pivot
+    setActiveCodeLine(12); await new Promise(resolve => setTimeout(resolve, sortSpeed / 3));
+
+    let i = low - 1;
+    setActiveCodeLine(13); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+
+    for (let j = low; j <= high - 1; j++) {
+      setActiveCodeLine(15); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+      setComparingIndices([j, high]); // Compare element j with pivot
+      setActiveCodeLine(16); await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+
+      setActiveCodeLine(17); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+      if (arr[j] < pivot) {
+        i++;
+        setActiveCodeLine(18); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+        setActiveCodeLine(19); // Highlight swap i and j
+        setComparingIndices([i, j]); // Briefly highlight swap targets
+        await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+        setActiveCodeLine(21); // Update visualization
+        setItems([...arr]);
+        await new Promise(resolve => setTimeout(resolve, sortSpeed / 2)); // Pause after swap
+        setComparingIndices(null); // Clear swap highlight
+      } else {
+         // No swap, just clear comparison highlight
+         setComparingIndices(null);
+      }
+      setActiveCodeLine(23); // Pause at end of loop iteration
       await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
     }
-    setActiveCodeLine(24); // Highlight: // Clear highlights (end of outer loop)
-    await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
 
-    // Clear all highlights at the end
-    setCurrentIndex(null);
-    setMinIndex(null);
-    setComparingIndices(null);
-    setActiveAlgorithm(null);
-    setActiveCodeLine(null);
-    setIsSorting(false);
+    setActiveCodeLine(25); // Highlight swap pivot into place
+    setComparingIndices([i + 1, high]); // Highlight swap targets
+    await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
+    setActiveCodeLine(27); // Update visualization
+    setItems([...arr]);
+    await new Promise(resolve => setTimeout(resolve, sortSpeed / 2)); // Pause after pivot swap
+
+    setComparingIndices(null); // Clear highlights
+    setPivotIndex(null);
+    setActiveCodeLine(29); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    setActiveCodeLine(30); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    return i + 1; // Return partition index
+  };
+
+  const quickSortRecursive = async (arr: number[], low: number, high: number) => {
+    setActiveCodeLine(1); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    setActiveCodeLine(2); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    if (low < high) {
+      setActiveCodeLine(4); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+      let pi = await partition(arr, low, high);
+      setActiveCodeLine(5); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+      await quickSortRecursive(arr, low, pi - 1);
+      setActiveCodeLine(6); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+      await quickSortRecursive(arr, pi + 1, high);
+    }
+     setActiveCodeLine(8); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+  };
+
+   const startQuickSort = useCallback(async () => {
+    setIsSorting(true); setActiveAlgorithm('quick');
+    let arr = [...items];
+    await quickSortRecursive(arr, 0, arr.length - 1);
+    setActiveAlgorithm(null); setActiveCodeLine(null); setIsSorting(false);
   }, [items, sortSpeed]);
 
 
   // --- Event Handlers ---
   const handleBubbleSortClick = () => {
     if (!isSorting) {
-      // Clear other algorithm highlights before starting
-      setMinIndex(null);
-      setCurrentIndex(null);
-      setActiveCodeLine(null); // Clear code line highlight
+      setMinIndex(null); setCurrentIndex(null); setKeyIndex(null); setMergeRange(null); setPivotIndex(null);
+      setActiveCodeLine(null);
       bubbleSort();
     }
   };
 
    const handleSelectionSortClick = () => {
     if (!isSorting) {
-       // Clear other algorithm highlights before starting
-      setComparingIndices(null);
-      setActiveCodeLine(null); // Clear code line highlight
+      setComparingIndices(null); setKeyIndex(null); setMergeRange(null); setPivotIndex(null);
+      setActiveCodeLine(null);
       selectionSort();
     }
   };
 
+   const handleInsertionSortClick = () => {
+    if (!isSorting) {
+      setComparingIndices(null); setMinIndex(null); setCurrentIndex(null); setMergeRange(null); setPivotIndex(null);
+      setActiveCodeLine(null);
+      insertionSort();
+    }
+  };
+
+   const handleMergeSortClick = () => {
+    if (!isSorting) {
+      setComparingIndices(null); setMinIndex(null); setCurrentIndex(null); setKeyIndex(null); setPivotIndex(null);
+      setActiveCodeLine(null);
+      startMergeSort();
+    }
+  };
+
+   const handleQuickSortClick = () => {
+    if (!isSorting) {
+      setComparingIndices(null); setMinIndex(null); setCurrentIndex(null); setKeyIndex(null); setMergeRange(null);
+      setActiveCodeLine(null);
+      startQuickSort(); // Call the wrapper function
+    }
+  };
+
   const handleResetClick = () => {
-     setItems(initialArrayData); // Reset array to initial state
-     // Clear all highlights
-     setComparingIndices(null);
-     setMinIndex(null);
-     setCurrentIndex(null);
-     setActiveAlgorithm(null); // Clear displayed algorithm
-     setActiveCodeLine(null); // Clear code line highlight
+     setItems(initialArrayData);
+     setComparingIndices(null); setMinIndex(null); setCurrentIndex(null); setKeyIndex(null); setMergeRange(null); setPivotIndex(null);
+     setActiveAlgorithm(null);
+     setActiveCodeLine(null);
   }
 
   const handleSpeedChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -315,6 +422,27 @@ export default function ArraySortingVisualization() { // Renamed component for c
              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
            >
              Selection Sort
+           </button>
+            <button
+             onClick={handleInsertionSortClick}
+             disabled={isSorting}
+             className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+           >
+             Insertion Sort
+           </button>
+            <button
+             onClick={handleMergeSortClick}
+             disabled={isSorting}
+             className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+           >
+             Merge Sort
+           </button>
+            <button
+             onClick={handleQuickSortClick} // Add handler
+             disabled={isSorting}
+             className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed" // Style button
+           >
+             Quick Sort
            </button>
            <button
              onClick={handleResetClick}
@@ -393,6 +521,9 @@ export default function ArraySortingVisualization() { // Renamed component for c
           comparingIndices={comparingIndices}
           minIndex={minIndex}
           currentIndex={currentIndex}
+          keyIndex={keyIndex}
+          mergeRange={mergeRange}
+          pivotIndex={pivotIndex} // Pass pivotIndex for Quick Sort highlight
          />
         {/* <Box position={[-4, 3, 0]} x={1} y={1} z={1}  />
           <Box position={[-2, 3, 0]} x={1} y={2} z={1} />
