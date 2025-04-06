@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface AlgorithmCodeDisplayProps {
-  algorithm: 'bubble' | 'selection' | 'insertion' | 'merge' | 'quick' | 'heap' | null; // Add 'heap'
+  algorithm: 'bubble' | 'selection' | 'insertion' | 'merge' | 'quick' | 'heap' | 'shell' | null; // Add 'shell'
   currentLine: number | null;
 }
 
@@ -163,6 +163,38 @@ async function bubbleSort(arr) {
  } // Line 40
  `.trim();
  
+ // Shell Sort Code String
+ const shellSortCode = `
+ async function shellSort(arr) { // Line 1
+   let n = arr.length;
+   // Start with a big gap, then reduce the gap
+   for (let gap = Math.floor(n / 2); gap > 0; gap = Math.floor(gap / 2)) { // Line 4
+     // Do a gapped insertion sort for this gap size.
+     // The first gap elements arr[0..gap-1] are already in gapped order
+     // keep adding one more element until the entire array is gap sorted
+     for (let i = gap; i < n; i += 1) { // Line 8
+       // add arr[i] to the elements that have been gap sorted
+       // save arr[i] in temp and make a hole at position i
+       let temp = arr[i]; // Line 11 Highlight temp/key
+       // shift earlier gap-sorted elements up until the correct location for arr[i] is found
+       let j;
+       // Highlight comparison j vs temp
+       for (j = i; j >= gap && arr[j - gap] > temp; j -= gap) { // Line 15
+         // Highlight shift target j
+         arr[j] = arr[j - gap]; // Line 17 Shift element
+         // Update visualization
+       }
+       // put temp (the original arr[i]) in its correct location
+       // Highlight placement j
+       arr[j] = temp; // Line 22 Place temp
+       // Update visualization
+       // Pause
+     }
+   }
+   // Clear highlights
+ } // Line 29
+ `.trim();
+ 
  // Corrected Selection Sort Code String (no leading '+')
  const selectionSortCode = `
  async function selectionSort(arr) {
@@ -205,7 +237,9 @@ const AlgorithmCodeDisplay: React.FC<AlgorithmCodeDisplayProps> = ({ algorithm, 
        case 'quick':
          return quickSortCode;
        case 'heap':
-         return heapSortCode; // Added case
+         return heapSortCode;
+       case 'shell':
+         return shellSortCode; // Added case
        case 'selection':
          return selectionSortCode;
        default:

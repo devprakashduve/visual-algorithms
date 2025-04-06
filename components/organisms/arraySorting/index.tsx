@@ -72,16 +72,18 @@ export default function ArraySortingVisualization() { // Renamed component for c
   const [comparingIndices, setComparingIndices] = useState<number[] | null>(null);
   // State for Selection Sort highlighting (current minimum index found)
   const [minIndex, setMinIndex] = useState<number | null>(null);
-   // State for Selection Sort / Insertion Sort current index highlighting
+   // State for Selection/Insertion/Shell Sort current index highlighting
    const [currentIndex, setCurrentIndex] = useState<number | null>(null);
-   // State for Insertion Sort key highlighting
+   // State for Insertion/Shell Sort key/temp highlighting
    const [keyIndex, setKeyIndex] = useState<number | null>(null);
    // State for Merge Sort highlighting (range being merged)
    const [mergeRange, setMergeRange] = useState<{ left: number; right: number } | null>(null);
    // State for Quick Sort pivot highlighting
    const [pivotIndex, setPivotIndex] = useState<number | null>(null);
+   // State for Heap Sort highlighting (root, left, right during heapify)
+   const [heapIndices, setHeapIndices] = useState<{ root: number; left?: number; right?: number; largest?: number } | null>(null);
    // State to track the currently active algorithm for code display
-   const [activeAlgorithm, setActiveAlgorithm] = useState<'bubble' | 'selection' | 'insertion' | 'merge' | 'quick' | null>(null);
+   const [activeAlgorithm, setActiveAlgorithm] = useState<'bubble' | 'selection' | 'insertion' | 'merge' | 'quick' | 'heap' | 'shell' | null>(null);
    // State to track the line number to highlight in the code display
    const [activeCodeLine, setActiveCodeLine] = useState<number | null>(null);
 
@@ -280,50 +282,43 @@ export default function ArraySortingVisualization() { // Renamed component for c
     setActiveCodeLine(10); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
     let pivot = arr[high];
     setActiveCodeLine(11); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
-    setPivotIndex(high); // Highlight pivot
+    setPivotIndex(high);
     setActiveCodeLine(12); await new Promise(resolve => setTimeout(resolve, sortSpeed / 3));
-
     let i = low - 1;
     setActiveCodeLine(13); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
-
     for (let j = low; j <= high - 1; j++) {
       setActiveCodeLine(15); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
-      setComparingIndices([j, high]); // Compare element j with pivot
+      setComparingIndices([j, high]);
       setActiveCodeLine(16); await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
-
       setActiveCodeLine(17); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
       if (arr[j] < pivot) {
         i++;
         setActiveCodeLine(18); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
-        setActiveCodeLine(19); // Highlight swap i and j
-        setComparingIndices([i, j]); // Briefly highlight swap targets
+        setActiveCodeLine(19);
+        setComparingIndices([i, j]);
         await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
         [arr[i], arr[j]] = [arr[j], arr[i]];
-        setActiveCodeLine(21); // Update visualization
+        setActiveCodeLine(21);
         setItems([...arr]);
-        await new Promise(resolve => setTimeout(resolve, sortSpeed / 2)); // Pause after swap
-        setComparingIndices(null); // Clear swap highlight
+        await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+        setComparingIndices(null);
       } else {
-         // No swap, just clear comparison highlight
          setComparingIndices(null);
       }
-      setActiveCodeLine(23); // Pause at end of loop iteration
-      await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+      setActiveCodeLine(23); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
     }
-
-    setActiveCodeLine(25); // Highlight swap pivot into place
-    setComparingIndices([i + 1, high]); // Highlight swap targets
+    setActiveCodeLine(25);
+    setComparingIndices([i + 1, high]);
     await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
     [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
-    setActiveCodeLine(27); // Update visualization
+    setActiveCodeLine(27);
     setItems([...arr]);
-    await new Promise(resolve => setTimeout(resolve, sortSpeed / 2)); // Pause after pivot swap
-
-    setComparingIndices(null); // Clear highlights
+    await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+    setComparingIndices(null);
     setPivotIndex(null);
     setActiveCodeLine(29); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
     setActiveCodeLine(30); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
-    return i + 1; // Return partition index
+    return i + 1;
   };
 
   const quickSortRecursive = async (arr: number[], low: number, high: number) => {
@@ -347,11 +342,130 @@ export default function ArraySortingVisualization() { // Renamed component for c
     setActiveAlgorithm(null); setActiveCodeLine(null); setIsSorting(false);
   }, [items, sortSpeed]);
 
+  // --- Heap Sort Algorithm ---
+  const heapify = async (arr: number[], n: number, i: number) => {
+    setActiveCodeLine(18); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    let largest = i;
+    setActiveCodeLine(19); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    let l = 2 * i + 1;
+    setActiveCodeLine(20); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    let r = 2 * i + 2;
+    setActiveCodeLine(21); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    setHeapIndices({ root: i, left: l < n ? l : undefined, right: r < n ? r : undefined, largest: largest });
+    setActiveCodeLine(22); await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+    setActiveCodeLine(24); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+     if (l < n && arr[l] > arr[largest]) {
+       largest = l;
+       setActiveCodeLine(25); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+       setHeapIndices(prev => prev ? { ...prev, largest: largest } : null);
+       await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+     }
+     setActiveCodeLine(28); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+     if (r < n && arr[r] > arr[largest]) {
+       largest = r;
+       setActiveCodeLine(29); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+       setHeapIndices(prev => prev ? { ...prev, largest: largest } : null);
+       await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+     }
+    setHeapIndices(null);
+    setActiveCodeLine(32); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    if (largest !== i) {
+      setActiveCodeLine(33);
+      setComparingIndices([i, largest]);
+      await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+      [arr[i], arr[largest]] = [arr[largest], arr[i]];
+      setActiveCodeLine(35);
+      setItems([...arr]);
+      setComparingIndices(null);
+      await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+      setActiveCodeLine(37); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+      await heapify(arr, n, largest);
+    }
+    setActiveCodeLine(39); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+  };
+
+  const startHeapSort = useCallback(async () => {
+    setIsSorting(true); setActiveAlgorithm('heap');
+    setActiveCodeLine(1); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    let arr = [...items];
+    let n = arr.length;
+    setActiveCodeLine(2); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    setActiveCodeLine(4); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
+      setActiveCodeLine(5); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+      await heapify(arr, n, i);
+    }
+    setActiveCodeLine(8); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    for (let i = n - 1; i > 0; i--) {
+      setActiveCodeLine(9);
+      setComparingIndices([0, i]);
+      await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+      [arr[0], arr[i]] = [arr[i], arr[0]];
+      setActiveCodeLine(10); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+      setActiveCodeLine(11);
+      setItems([...arr]);
+      setComparingIndices(null);
+      await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+      setActiveCodeLine(13); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+      await heapify(arr, i, 0);
+    }
+    setActiveCodeLine(15); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    setActiveAlgorithm(null); setActiveCodeLine(null); setIsSorting(false);
+  }, [items, sortSpeed]);
+
+  // --- Shell Sort Algorithm ---
+  const shellSort = useCallback(async () => {
+    setIsSorting(true); setActiveAlgorithm('shell');
+    setActiveCodeLine(1); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    let arr = [...items];
+    let n = arr.length;
+    setActiveCodeLine(2); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+
+    setActiveCodeLine(4); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    for (let gap = Math.floor(n / 2); gap > 0; gap = Math.floor(gap / 2)) {
+      setActiveCodeLine(8); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+      for (let i = gap; i < n; i += 1) {
+        let temp = arr[i];
+        setKeyIndex(i); // Highlight the temp/key element
+        setActiveCodeLine(11); await new Promise(resolve => setTimeout(resolve, sortSpeed / 3));
+
+        let j;
+        setActiveCodeLine(15); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+        for (j = i; j >= gap && arr[j - gap] > temp; j -= gap) {
+          setComparingIndices([j - gap, i]); // Highlight comparison
+          setCurrentIndex(j); // Highlight where shift might happen
+          setActiveCodeLine(15); // Highlight loop condition check
+          await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+
+          setActiveCodeLine(17); // Highlight shift
+          arr[j] = arr[j - gap];
+          setItems([...arr]); // Update visualization after shift
+          setCurrentIndex(null); // Clear shift target highlight
+          setComparingIndices(null); // Clear comparison highlight
+          await new Promise(resolve => setTimeout(resolve, sortSpeed / 2)); // Pause after shift
+        }
+        setComparingIndices(null); // Clear comparison if loop condition fails immediately
+
+        setActiveCodeLine(22); // Highlight placement
+        setCurrentIndex(j); // Highlight placement index
+        arr[j] = temp;
+        setItems([...arr]); // Update visualization after placement
+        await new Promise(resolve => setTimeout(resolve, sortSpeed / 2)); // Pause after placement
+
+        setKeyIndex(null); // Clear key highlight
+        setCurrentIndex(null); // Clear placement highlight
+      }
+    }
+    setActiveCodeLine(28); await new Promise(resolve => setTimeout(resolve, sortSpeed / 2)); // Clear highlights
+    setComparingIndices(null); setCurrentIndex(null); setKeyIndex(null);
+    setActiveAlgorithm(null); setActiveCodeLine(null); setIsSorting(false);
+  }, [items, sortSpeed]);
+
 
   // --- Event Handlers ---
   const handleBubbleSortClick = () => {
     if (!isSorting) {
-      setMinIndex(null); setCurrentIndex(null); setKeyIndex(null); setMergeRange(null); setPivotIndex(null);
+      setMinIndex(null); setCurrentIndex(null); setKeyIndex(null); setMergeRange(null); setPivotIndex(null); setHeapIndices(null);
       setActiveCodeLine(null);
       bubbleSort();
     }
@@ -359,7 +473,7 @@ export default function ArraySortingVisualization() { // Renamed component for c
 
    const handleSelectionSortClick = () => {
     if (!isSorting) {
-      setComparingIndices(null); setKeyIndex(null); setMergeRange(null); setPivotIndex(null);
+      setComparingIndices(null); setKeyIndex(null); setMergeRange(null); setPivotIndex(null); setHeapIndices(null);
       setActiveCodeLine(null);
       selectionSort();
     }
@@ -367,7 +481,7 @@ export default function ArraySortingVisualization() { // Renamed component for c
 
    const handleInsertionSortClick = () => {
     if (!isSorting) {
-      setComparingIndices(null); setMinIndex(null); setCurrentIndex(null); setMergeRange(null); setPivotIndex(null);
+      setComparingIndices(null); setMinIndex(null); setCurrentIndex(null); setMergeRange(null); setPivotIndex(null); setHeapIndices(null);
       setActiveCodeLine(null);
       insertionSort();
     }
@@ -375,7 +489,7 @@ export default function ArraySortingVisualization() { // Renamed component for c
 
    const handleMergeSortClick = () => {
     if (!isSorting) {
-      setComparingIndices(null); setMinIndex(null); setCurrentIndex(null); setKeyIndex(null); setPivotIndex(null);
+      setComparingIndices(null); setMinIndex(null); setCurrentIndex(null); setKeyIndex(null); setPivotIndex(null); setHeapIndices(null);
       setActiveCodeLine(null);
       startMergeSort();
     }
@@ -383,15 +497,31 @@ export default function ArraySortingVisualization() { // Renamed component for c
 
    const handleQuickSortClick = () => {
     if (!isSorting) {
-      setComparingIndices(null); setMinIndex(null); setCurrentIndex(null); setKeyIndex(null); setMergeRange(null);
+      setComparingIndices(null); setMinIndex(null); setCurrentIndex(null); setKeyIndex(null); setMergeRange(null); setHeapIndices(null);
       setActiveCodeLine(null);
-      startQuickSort(); // Call the wrapper function
+      startQuickSort();
+    }
+  };
+
+   const handleHeapSortClick = () => {
+    if (!isSorting) {
+      setComparingIndices(null); setMinIndex(null); setCurrentIndex(null); setKeyIndex(null); setMergeRange(null); setPivotIndex(null);
+      setActiveCodeLine(null);
+      startHeapSort();
+    }
+  };
+
+   const handleShellSortClick = () => {
+    if (!isSorting) {
+      setComparingIndices(null); setMinIndex(null); setCurrentIndex(null); setKeyIndex(null); setMergeRange(null); setPivotIndex(null); setHeapIndices(null);
+      setActiveCodeLine(null);
+      shellSort(); // Call the Shell Sort function
     }
   };
 
   const handleResetClick = () => {
      setItems(initialArrayData);
-     setComparingIndices(null); setMinIndex(null); setCurrentIndex(null); setKeyIndex(null); setMergeRange(null); setPivotIndex(null);
+     setComparingIndices(null); setMinIndex(null); setCurrentIndex(null); setKeyIndex(null); setMergeRange(null); setPivotIndex(null); setHeapIndices(null);
      setActiveAlgorithm(null);
      setActiveCodeLine(null);
   }
@@ -412,42 +542,56 @@ export default function ArraySortingVisualization() { // Renamed component for c
            <button
              onClick={handleBubbleSortClick}
              disabled={isSorting}
-             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 text-xs rounded disabled:opacity-50 disabled:cursor-not-allowed" // Smaller buttons
            >
-             Bubble Sort
+             Bubble
            </button>
             <button
              onClick={handleSelectionSortClick}
              disabled={isSorting}
-             className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+             className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 text-xs rounded disabled:opacity-50 disabled:cursor-not-allowed"
            >
-             Selection Sort
+             Selection
            </button>
             <button
              onClick={handleInsertionSortClick}
              disabled={isSorting}
-             className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+             className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-1 px-2 text-xs rounded disabled:opacity-50 disabled:cursor-not-allowed"
            >
-             Insertion Sort
+             Insertion
            </button>
             <button
              onClick={handleMergeSortClick}
              disabled={isSorting}
-             className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+             className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-1 px-2 text-xs rounded disabled:opacity-50 disabled:cursor-not-allowed"
            >
-             Merge Sort
+             Merge
            </button>
             <button
-             onClick={handleQuickSortClick} // Add handler
+             onClick={handleQuickSortClick}
              disabled={isSorting}
-             className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed" // Style button
+             className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 text-xs rounded disabled:opacity-50 disabled:cursor-not-allowed"
            >
-             Quick Sort
+             Quick
+           </button>
+            <button
+             onClick={handleHeapSortClick}
+             disabled={isSorting}
+             className="bg-yellow-500 hover:bg-yellow-700 text-black font-bold py-1 px-2 text-xs rounded disabled:opacity-50 disabled:cursor-not-allowed"
+           >
+             Heap
+           </button>
+            <button
+             onClick={handleShellSortClick} // Add handler
+             disabled={isSorting}
+             className="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-1 px-2 text-xs rounded disabled:opacity-50 disabled:cursor-not-allowed" // Style button
+           >
+             Shell
            </button>
            <button
              onClick={handleResetClick}
              disabled={isSorting}
-             className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+             className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-1 px-2 text-xs rounded disabled:opacity-50 disabled:cursor-not-allowed"
            >
              Reset
            </button>
@@ -523,7 +667,8 @@ export default function ArraySortingVisualization() { // Renamed component for c
           currentIndex={currentIndex}
           keyIndex={keyIndex}
           mergeRange={mergeRange}
-          pivotIndex={pivotIndex} // Pass pivotIndex for Quick Sort highlight
+          pivotIndex={pivotIndex}
+          heapIndices={heapIndices} // Pass heapIndices for Heap Sort highlight
          />
         {/* <Box position={[-4, 3, 0]} x={1} y={1} z={1}  />
           <Box position={[-2, 3, 0]} x={1} y={2} z={1} />
@@ -560,3 +705,31 @@ export default function ArraySortingVisualization() { // Renamed component for c
    </div> // Close the wrapper div
   );
 }
+
+// </final_file_content>
+
+// IMPORTANT: For any future changes to this file, use the final_file_content shown above as your reference. This content reflects the current state of the file, including any auto-formatting (e.g., if you used single quotes but the formatter converted them to double quotes). Always base your SEARCH/REPLACE operations on this final version to ensure accuracy.
+
+
+
+// New problems detected after saving the file:
+// components/organisms/arraySorting/index.tsx
+// - [ts Error] Line 624: Type '{ items: number[]; comparingIndices: number[] | null; minIndex: number | null; currentIndex: number | null; keyIndex: number | null; mergeRange: { left: number; right: number; } | null; pivotIndex: number | null; heapIndices: { ...; } | null; }' is not assignable to type 'IntrinsicAttributes & BoxRowProps'.
+//   Property 'heapIndices' does not exist on type 'IntrinsicAttributes & BoxRowProps'.<environment_details>
+// # VSCode Visible Files
+// components/organisms/arraySorting/index.tsx
+
+// # VSCode Open Tabs
+// components/organisms/BubbleSortDemo/BubbleSortDemo.tsx
+// next.config.js
+// src/pages/index.tsx
+// components/molecules/boxRow/index.tsx
+// components/molecules/AlgorithmCodeDisplay/index.tsx
+// components/organisms/arraySorting/index.tsx
+
+// # Current Time
+// 06/04/2025, 7:39:00 am (Asia/Calcutta, UTC+5.5:00)
+
+// # Current Mode
+// ACT MODE
+// </environment_details>

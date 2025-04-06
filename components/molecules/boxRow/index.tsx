@@ -25,6 +25,8 @@ const DEFAULT_BAR_COLOR = "hsl(210, 100%, 50%)"; // Blue
  const KEY_COLOR = "hsl(280, 100%, 50%)"; // Purple (Insertion Sort key)
  const MERGE_RANGE_COLOR = "hsl(30, 100%, 50%)"; // Orange (Merge Sort range)
  const PIVOT_COLOR = "hsl(330, 100%, 50%)"; // Pink (Quick Sort pivot)
+ const HEAP_NODE_COLOR = "hsl(180, 70%, 40%)"; // Teal (Heapify nodes: root, left, right)
+ const HEAP_LARGEST_COLOR = "hsl(180, 100%, 60%)"; // Lighter Teal (Heapify largest node)
  // ---
  
  // Define props interface
@@ -36,9 +38,10 @@ const DEFAULT_BAR_COLOR = "hsl(210, 100%, 50%)"; // Blue
    keyIndex?: number | null;          // For Insertion Sort key
    mergeRange?: { left: number; right: number } | null; // For Merge Sort range
    pivotIndex?: number | null;        // For Quick Sort pivot
+   heapIndices?: { root: number; left?: number; right?: number; largest?: number } | null; // For Heap Sort heapify
  }
  
- const BoxRow: React.FC<BoxRowProps> = ({ items, comparingIndices, minIndex, currentIndex, keyIndex, mergeRange, pivotIndex }) => {
+ const BoxRow: React.FC<BoxRowProps> = ({ items, comparingIndices, minIndex, currentIndex, keyIndex, mergeRange, pivotIndex, heapIndices }) => {
   // Use useSprings to manage animations for each item
   const springs = useSprings(
     items.length,
@@ -65,22 +68,29 @@ const DEFAULT_BAR_COLOR = "hsl(210, 100%, 50%)"; // Blue
         const indexValue = i; // Current index for static display
  
  
+ 
          // Determine highlight state and color (with priority)
          let barColor = DEFAULT_BAR_COLOR;
          const isInMergeRange = mergeRange && i >= mergeRange.left && i <= mergeRange.right;
+         const isHeapNode = heapIndices && (i === heapIndices.root || i === heapIndices.left || i === heapIndices.right);
+         const isHeapLargest = heapIndices && i === heapIndices.largest;
  
-         if (pivotIndex === i) {
-           barColor = PIVOT_COLOR; // 1. Quick Sort Pivot
+         if (isHeapLargest) {
+           barColor = HEAP_LARGEST_COLOR; // 1. Heapify largest
+         } else if (isHeapNode) {
+           barColor = HEAP_NODE_COLOR; // 2. Heapify root/children
+         } else if (pivotIndex === i) {
+           barColor = PIVOT_COLOR; // 3. Quick Sort Pivot
          } else if (keyIndex === i) {
-           barColor = KEY_COLOR; // 2. Insertion sort key
+           barColor = KEY_COLOR; // 4. Insertion sort key
          } else if (currentIndex === i) {
-           barColor = CURRENT_INDEX_COLOR; // 3. Selection/Insertion current index
+           barColor = CURRENT_INDEX_COLOR; // 5. Selection/Insertion current index
          } else if (minIndex === i) {
-           barColor = MIN_INDEX_COLOR; // 4. Selection sort min index
+           barColor = MIN_INDEX_COLOR; // 6. Selection sort min index
          } else if (comparingIndices?.includes(i)) {
-           barColor = COMPARE_COLOR; // 5. Comparison highlight
+           barColor = COMPARE_COLOR; // 7. Comparison highlight
          } else if (isInMergeRange) {
-           barColor = MERGE_RANGE_COLOR; // 6. Merge sort range
+           barColor = MERGE_RANGE_COLOR; // 8. Merge sort range
          }
  
          return (
