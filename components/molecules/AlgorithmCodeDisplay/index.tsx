@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface AlgorithmCodeDisplayProps {
-  algorithm: 'bubble' | 'selection' | 'insertion' | 'merge' | 'quick' | 'heap' | 'shell' | 'tree' | 'tim' | null; // Add 'tim'
+  algorithm: 'bubble' | 'selection' | 'insertion' | 'merge' | 'quick' | 'heap' | 'shell' | 'tree' | 'tim' | 'cocktail' | 'comb' | 'gnome' | 'strand' | null; // Add 'strand'
   currentLine: number | null;
 }
 
@@ -296,6 +296,184 @@ async function timSort(arr) {
 }
 `.trim();
 
+// Cocktail Shaker Sort Code String (Placeholder)
+const cocktailSortCode = `
+async function cocktailSort(arr) {
+  let swapped = true;
+  let start = 0;
+  let end = arr.length - 1;
+
+  while (swapped) {
+    // Reset swapped flag
+    swapped = false;
+
+    // Forward pass (like Bubble Sort)
+    // Highlight range [start..end] forward
+    for (let i = start; i < end; ++i) {
+      // Highlight comparison [i, i+1]
+      if (arr[i] > arr[i + 1]) {
+        [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
+        swapped = true;
+        // Update visualization
+      }
+      // Pause
+    }
+
+    // If nothing moved, array is sorted
+    if (!swapped) break;
+
+    // Otherwise, reset swapped flag for backward pass
+    swapped = false;
+    // Move the end point back by one
+    end--;
+
+    // Backward pass
+    // Highlight range [start..end] backward
+    for (let i = end - 1; i >= start; --i) {
+      // Highlight comparison [i, i+1]
+      if (arr[i] > arr[i + 1]) {
+        [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
+        swapped = true;
+        // Update visualization
+      }
+      // Pause
+    }
+
+    // Move the start point forward by one
+    start++;
+  }
+  // Clear highlights
+}
+`.trim();
+
+// Comb Sort Code String (Placeholder)
+const combSortCode = `
+// Function to get the next gap size
+function getNextGap(gap) {
+  // Shrink gap by Shrink factor
+  gap = Math.floor((gap * 10) / 13); // Standard shrink factor = 1.3
+  if (gap < 1) {
+    return 1;
+  }
+  return gap;
+}
+
+async function combSort(arr) {
+  let n = arr.length;
+  // Initialize gap
+  let gap = n;
+  // Initialize swapped as true to make sure that loop runs
+  let swapped = true;
+
+  // Keep running while gap is more than 1 and last iteration caused a swap
+  while (gap !== 1 || swapped === true) {
+    // Find next gap
+    gap = getNextGap(gap);
+    // Highlight gap (optional visualization)
+
+    // Initialize swapped as false so that we can check if swap happened or not
+    swapped = false;
+
+    // Compare all elements with current gap
+    for (let i = 0; i < n - gap; i++) {
+      // Highlight comparison [i, i + gap]
+      if (arr[i] > arr[i + gap]) {
+        // Swap arr[i] and arr[i+gap]
+        [arr[i], arr[i + gap]] = [arr[i + gap], arr[i]];
+        swapped = true;
+        // Update visualization
+      }
+      // Pause
+    }
+  }
+  // Clear highlights
+}
+`.trim();
+
+// Gnome Sort Code String (Placeholder)
+const gnomeSortCode = `
+async function gnomeSort(arr) {
+  let n = arr.length;
+  let index = 0;
+  // Highlight index
+
+  while (index < n) {
+    if (index === 0) {
+      // Move to next element if at the start
+      index++;
+      // Highlight index
+    }
+    // Highlight comparison [index, index - 1]
+    if (arr[index] >= arr[index - 1]) {
+      // Move forward if in order
+      index++;
+      // Highlight index
+    } else {
+      // Swap if out of order
+      [arr[index], arr[index - 1]] = [arr[index - 1], arr[index]];
+      // Update visualization
+      // Move backward
+      index--;
+      // Highlight index
+    }
+    // Pause
+  }
+  // Clear highlights
+}
+`.trim();
+
+// Strand Sort Code String (Placeholder)
+const strandSortCode = `
+async function strandSort(arr) {
+  let input = [...arr]; // Copy input
+  let result = []; // Initialize result list
+
+  // Highlight input/result lists
+
+  while (input.length > 0) {
+    let sublist = []; // Initialize current strand (sublist)
+    // Move first element from input to sublist
+    sublist.push(input.shift());
+    // Highlight sublist/input lists
+
+    let i = 0;
+    while (i < input.length) {
+      // Highlight comparison: input[i] vs sublist.last
+      if (input[i] > sublist[sublist.length - 1]) {
+        // Move element from input to sublist
+        sublist.push(input.splice(i, 1)[0]);
+        // Highlight sublist/input lists
+      } else {
+        i++; // Move to next element in input
+      }
+      // Pause
+    }
+
+    // Merge sublist into result
+    let merged = [];
+    let resIdx = 0, subIdx = 0;
+    while (resIdx < result.length && subIdx < sublist.length) {
+      // Highlight merge comparison: result[resIdx] vs sublist[subIdx]
+      if (result[resIdx] < sublist[subIdx]) {
+        merged.push(result[resIdx++]);
+      } else {
+        merged.push(sublist[subIdx++]);
+      }
+      // Update visualization (merged part)
+    }
+    // Add remaining elements
+    merged.push(...result.slice(resIdx));
+    merged.push(...sublist.slice(subIdx));
+    result = merged;
+    // Update visualization (result list)
+    // Pause
+  }
+  // Copy result back to original array for final state
+  // Clear highlights
+}
+`.trim();
+
+
  // --- Descriptions ---
  const descriptions = {
    bubble: "Compares adjacent elements and swaps them if they are in the wrong order. Repeats passes until sorted. Simple but inefficient (O(n^2)).",
@@ -307,6 +485,10 @@ async function timSort(arr) {
    shell: "An improvement over insertion sort. Compares elements separated by a gap, then reduces the gap. More efficient than simple insertion sort (average complexity depends on gap sequence).",
    tree: "Builds a Binary Search Tree (BST) from the elements, then performs an in-order traversal to get the sorted sequence. Average O(n log n), but O(n^2) worst case for unbalanced trees. Requires extra space.",
    tim: "A hybrid algorithm derived from Merge Sort and Insertion Sort. Divides the array into 'runs', sorts runs using Insertion Sort, then merges runs using Merge Sort. Efficient (O(n log n)) and stable.",
+   cocktail: "A variation of Bubble Sort that traverses the array in both directions per pass. Slightly improves performance over Bubble Sort by moving items to their correct position faster, but still O(n^2).",
+   comb: "Improves on Bubble Sort by using a gap between compared elements that starts large and shrinks (typically by a factor of 1.3). Helps eliminate 'turtles' (small values near the end) quickly. Average case better than O(n^2).",
+   gnome: "Compares the current element with the previous. If they're in order, move forward. If out of order, swap them and move backward. Simple, like Insertion Sort, but moves elements via swaps (O(n^2)).",
+   strand: "Repeatedly extracts sorted sublists ('strands') from the input list and merges them into a result list. Uses extra space. Performance depends on data distribution (O(n) best, O(n^2) worst).",
  };
  // ---
  
@@ -359,6 +541,14 @@ const AlgorithmCodeDisplay: React.FC<AlgorithmCodeDisplayProps> = ({ algorithm, 
          return treeSortCode; // Added case
        case 'tim':
          return timSortCode; // Added case
+       case 'cocktail':
+         return cocktailSortCode; // Added case
+       case 'comb':
+         return combSortCode; // Added case
+       case 'gnome':
+         return gnomeSortCode; // Added case
+       case 'strand':
+         return strandSortCode; // Added case
        case 'selection':
          return selectionSortCode;
        default:
@@ -370,7 +560,7 @@ const AlgorithmCodeDisplay: React.FC<AlgorithmCodeDisplayProps> = ({ algorithm, 
   const lines = code.split('\n');
 
   return (
-    <div className="absolute top-2 right-2 z-10 bg-gray-800 text-white p-4 rounded-md shadow-md max-h-[calc(100vh-2rem)] overflow-y-auto font-mono text-sm w-1/3">
+    <div className="absolute top-2 right-2 z-10 bg-white/40 text-green-900 p-4 rounded-md shadow-md max-h-[calc(100vh-2rem)] overflow-y-auto font-mono text-sm w-1/3">
       <h3 className="text-lg font-semibold mb-2 border-b border-gray-600 pb-1">
         {algorithm ? `${algorithm.charAt(0).toUpperCase() + algorithm.slice(1)} Sort Code` : 'Algorithm Code'}
       </h3>
@@ -390,9 +580,9 @@ const AlgorithmCodeDisplay: React.FC<AlgorithmCodeDisplayProps> = ({ algorithm, 
        </pre>
        {/* Description Section */}
        {algorithm && descriptions[algorithm] && (
-         <div className="mt-4 pt-2 border-t border-gray-600">
+         <div className="mt-4 pt-2 border-t border-green-800">
            <h4 className="text-md font-semibold mb-1">Description:</h4>
-           <p className="text-xs text-gray-300">{descriptions[algorithm]}</p>
+           <p className="text-xs text-green-800">{descriptions[algorithm]}</p>
          </div>
        )}
      </div>
