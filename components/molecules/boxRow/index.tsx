@@ -41,11 +41,12 @@ const DEFAULT_BAR_COLOR = "hsl(210, 100%, 50%)"; // Blue
  const STRAND_MERGE_COMPARE_COLOR = "hsl(0, 100%, 70%)"; // Lighter Red (Strand Merge Comparison)
  // ---
  
- // Define props interface
- interface BoxRowProps {
-   items: number[];
-   comparingIndices?: number[] | null; // For comparison highlight
-   minIndex?: number | null;          // For Selection Sort minimum found
+// Define props interface
+interface BoxRowProps {
+  items: number[];
+  logicDetails?: Record<number, string> | null; // Map index to logic text
+  comparingIndices?: number[] | null; // For comparison highlight
+  minIndex?: number | null;          // For Selection Sort minimum found
    currentIndex?: number | null;      // For Selection/Insertion Sort current index
    keyIndex?: number | null;          // For Insertion Sort key
     mergeRange?: { left: number; right: number } | null; // For Merge Sort range
@@ -57,13 +58,13 @@ const DEFAULT_BAR_COLOR = "hsl(210, 100%, 50%)"; // Blue
     strandInputIndices?: Set<number> | null;
     strandSublistIndices?: Set<number> | null;
     strandResultIndices?: Set<number> | null;
-    strandMergeIndices?: { resultIdx: number; sublistIdx: number } | null; // Indices being compared during merge
-  }
+   strandMergeIndices?: { resultIdx: number; sublistIdx: number } | null; // Indices being compared during merge
+}
 
-  const BoxRow: React.FC<BoxRowProps> = ({
-    items, comparingIndices, minIndex, currentIndex, keyIndex, mergeRange, pivotIndex, heapIndices, timSortRange, cocktailRange,
-    strandInputIndices, strandSublistIndices, strandResultIndices, strandMergeIndices
-   }) => {
+const BoxRow: React.FC<BoxRowProps> = ({
+  items, logicDetails, comparingIndices, minIndex, currentIndex, keyIndex, mergeRange, pivotIndex, heapIndices, timSortRange, cocktailRange,
+  strandInputIndices, strandSublistIndices, strandResultIndices, strandMergeIndices
+ }) => {
   // Use useSprings to manage animations for each item
   const springs = useSprings(
     items.length,
@@ -157,9 +158,21 @@ const DEFAULT_BAR_COLOR = "hsl(210, 100%, 50%)"; // Blue
             barColor = MERGE_RANGE_COLOR; // 15. General Merge sort range
           }
  
-         return (
+        const logicText = logicDetails?.[i]; // Get logic text for this index, if any
+        const valueBarScaleY = itemValue * VALUE_BOX_SCALE_Y_MULTIPLIER;
+        const valueBarTopY = VALUE_BOX_BASE_Y_OFFSET + valueBarScaleY / 2; // Y position of the top of the value bar relative to group origin
+
+        return (
           // Each item is an animated group, its 'position' prop animates horizontally during swaps
           <animated.group key={`box-group-${i}`} position={props.position}>
+            {/* Render InfoBox for logic details if text exists */}
+            {logicText && (
+              <InfoBox
+                text={logicText}
+                // Position slightly above the top of the value bar
+                position={new Vector3(0,  2, -10)} // Adjust Y offset as needed
+              />
+            )}
             {/* Static background box */}
             <Box
               positionVal={[0, 0, 0]}

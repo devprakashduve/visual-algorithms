@@ -112,6 +112,8 @@ export default function ArraySortingVisualization() { // Renamed component for c
    const [activeAlgorithm, setActiveAlgorithm] = useState<'bubble' | 'selection' | 'insertion' | 'merge' | 'quick' | 'heap' | 'shell' | 'tree' | 'tim' | 'cocktail' | 'comb' | 'gnome' | 'strand' | null>(null);
    // State to track the line number to highlight in the code display
    const [activeCodeLine, setActiveCodeLine] = useState<number | null>(null);
+   // State to hold logic details for individual boxes
+   const [logicDetailsState, setLogicDetailsState] = useState<Record<number, string> | null>(null);
 
 
    // --- Bubble Sort Algorithm ---
@@ -129,28 +131,39 @@ export default function ArraySortingVisualization() { // Renamed component for c
        setActiveCodeLine(5); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
        for (let i = 0; i < n - 1; i++) {
          setActiveCodeLine(6); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
-         setComparingIndices([i, i + 1]);
-         setActiveCodeLine(7); await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
-         setActiveCodeLine(8); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
-         if (arr[i] > arr[i + 1]) {
-           setActiveCodeLine(10); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
-           [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
-           swapped = true;
-           setActiveCodeLine(11); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
-           setActiveCodeLine(12);
-           setItems([...arr]);
-           await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
-           setActiveCodeLine(14); await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
-         } else {
-           setActiveCodeLine(14); await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
-         }
-         setComparingIndices(null);
-       }
-       n--;
+        setComparingIndices([i, i + 1]);
+        // Set logic details for the boxes being compared
+        setLogicDetailsState({ [i]: `Comparing with index ${i + 1}`, [i + 1]: `Comparing with index ${i}` });
+        setActiveCodeLine(7); await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+        setActiveCodeLine(8); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+        if (arr[i] > arr[i + 1]) {
+          // Update logic details before swap
+          setLogicDetailsState({ [i]: `Value ${arr[i]} > ${arr[i+1]}. Swapping...`, [i + 1]: `Value ${arr[i+1]} < ${arr[i]}. Swapping...` });
+          setActiveCodeLine(10); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+          [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
+          swapped = true;
+          setActiveCodeLine(11); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+          setActiveCodeLine(12);
+          setItems([...arr]); // Update items state
+          await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // Wait for visual update
+          // Clear logic details after swap animation likely finished
+          setLogicDetailsState(null);
+          setActiveCodeLine(14); await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+        } else {
+          // Update logic details for no swap
+          setLogicDetailsState({ [i]: `Value ${arr[i]} <= ${arr[i+1]}. No swap.`, [i + 1]: `Value ${arr[i+1]} >= ${arr[i]}. No swap.` });
+          setActiveCodeLine(14); await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+          // Clear logic details after showing no swap
+          setLogicDetailsState(null);
+        }
+        setComparingIndices(null);
+      }
+      n--;
        setActiveCodeLine(16); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
      } while (swapped);
-     setActiveCodeLine(17); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    setActiveCodeLine(17); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
     setComparingIndices(null);
+    setLogicDetailsState(null); // Clear any remaining details at end of sort
     setActiveCodeLine(18); await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
     setActiveAlgorithm(null); setActiveCodeLine(null); setIsSorting(false);
   }, [items, sortSpeed]);
@@ -1144,9 +1157,10 @@ export default function ArraySortingVisualization() { // Renamed component for c
   const handleResetClick = () => {
      setItems(initialArrayData);
      setComparingIndices(null); setMinIndex(null); setCurrentIndex(null); setKeyIndex(null); setMergeRange(null); setPivotIndex(null); setHeapIndices(null); setTimSortRange(null); setCocktailRange(null); setCombGap(null);
-     setStrandInputIndices(null); setStrandSublistIndices(null); setStrandResultIndices(null); setStrandMergeIndices(null);
-     setActiveAlgorithm(null);
-     setActiveCodeLine(null);
+    setStrandInputIndices(null); setStrandSublistIndices(null); setStrandResultIndices(null); setStrandMergeIndices(null);
+    setLogicDetailsState(null); // Clear logic details on reset
+    setActiveAlgorithm(null);
+    setActiveCodeLine(null);
   }
 
   const handleSpeedChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -1338,11 +1352,12 @@ export default function ArraySortingVisualization() { // Renamed component for c
            timSortRange={timSortRange} // Pass Tim Sort state
            cocktailRange={cocktailRange} // Pass Cocktail Shaker Sort state
            // combGap={combGap} // Pass Comb Sort state (optional display)
-           strandInputIndices={strandInputIndices}
-           strandSublistIndices={strandSublistIndices}
-           strandResultIndices={strandResultIndices}
-           strandMergeIndices={strandMergeIndices}
-          />
+          strandInputIndices={strandInputIndices}
+          strandSublistIndices={strandSublistIndices}
+          strandResultIndices={strandResultIndices}
+          strandMergeIndices={strandMergeIndices}
+          logicDetails={logicDetailsState} // Pass the new state prop
+         />
          {/* <Box position={[-4, 3, 0]} x={1} y={1} z={1}  />
           <Box position={[-2, 3, 0]} x={1} y={2} z={1} />
           <Box position={[0, 3, 0]} x={1} y={2} z={1}  /> */}
