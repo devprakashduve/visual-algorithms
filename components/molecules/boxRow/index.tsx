@@ -169,8 +169,8 @@ const BoxRow: React.FC<BoxRowProps> = ({
             {logicText && (
               <InfoBox
                 text={logicText}
-                // Position slightly above the top of the value bar
-                position={new Vector3(0,  2, -10)} // Adjust Y offset as needed
+                // Position slightly above the top of the value bar (increased offset) and slightly forward (positive Z)
+                position={new Vector3(0, valueBarTopY + 5, 0.1)} // Increased Y offset, added small Z offset
               />
             )}
             {/* Static background box */}
