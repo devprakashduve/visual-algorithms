@@ -99,8 +99,10 @@ export default function ArraySortingVisualization() { // Renamed component for c
    const [heapIndices, setHeapIndices] = useState<{ root: number; left?: number; right?: number; largest?: number } | null>(null);
    // State for Tim Sort highlighting (insertion sort range or merge ranges)
    const [timSortRange, setTimSortRange] = useState<{ type: 'insertion' | 'merge'; start: number; end: number; mid?: number } | null>(null);
+   // State for Cocktail Shaker Sort highlighting (current traversal range)
+   const [cocktailRange, setCocktailRange] = useState<{ start: number; end: number; direction: 'forward' | 'backward' } | null>(null);
    // State to track the currently active algorithm for code display
-   const [activeAlgorithm, setActiveAlgorithm] = useState<'bubble' | 'selection' | 'insertion' | 'merge' | 'quick' | 'heap' | 'shell' | 'tree' | 'tim' | null>(null);
+   const [activeAlgorithm, setActiveAlgorithm] = useState<'bubble' | 'selection' | 'insertion' | 'merge' | 'quick' | 'heap' | 'shell' | 'tree' | 'tim' | 'cocktail' | null>(null);
    // State to track the line number to highlight in the code display
    const [activeCodeLine, setActiveCodeLine] = useState<number | null>(null);
 
@@ -689,6 +691,93 @@ export default function ArraySortingVisualization() { // Renamed component for c
     setActiveAlgorithm(null); setActiveCodeLine(null); setIsSorting(false);
   }, [items, sortSpeed]);
 
+  // --- Cocktail Shaker Sort Algorithm ---
+  const startCocktailSort = useCallback(async () => {
+    setIsSorting(true); setActiveAlgorithm('cocktail');
+    setActiveCodeLine(1); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // Start cocktailSort function
+    let arr = [...items];
+    let n = arr.length;
+    let swapped = true;
+    setActiveCodeLine(2); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    let start = 0;
+    setActiveCodeLine(3); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    let end = n - 1;
+    setActiveCodeLine(4); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+
+    setActiveCodeLine(6); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // while (swapped)
+    while (swapped) {
+      setActiveCodeLine(8); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // swapped = false;
+      swapped = false;
+
+      // Forward pass
+      setActiveCodeLine(11); // Highlight range [start..end] forward
+      setCocktailRange({ start, end, direction: 'forward' });
+      await new Promise(resolve => setTimeout(resolve, sortSpeed / 3));
+      setActiveCodeLine(12); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // for loop forward
+      for (let i = start; i < end; ++i) {
+        setActiveCodeLine(13); // Highlight comparison [i, i+1]
+        setComparingIndices([i, i + 1]);
+        await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+        setActiveCodeLine(14); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // if condition
+        if (arr[i] > arr[i + 1]) {
+          setActiveCodeLine(15); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // swap
+          [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
+          swapped = true;
+          setActiveCodeLine(16); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // swapped = true
+          setActiveCodeLine(17); // Update visualization
+          setItems([...arr]);
+          await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+        }
+        setComparingIndices(null);
+        setActiveCodeLine(19); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // Pause/end of loop iteration
+      }
+      setCocktailRange(null); // Clear range highlight
+
+      setActiveCodeLine(22); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // if (!swapped) break;
+      if (!swapped) break;
+
+      setActiveCodeLine(25); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // swapped = false; (reset)
+      swapped = false;
+      setActiveCodeLine(27); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // end--;
+      end--;
+
+      // Backward pass
+      setActiveCodeLine(30); // Highlight range [start..end] backward
+      setCocktailRange({ start, end, direction: 'backward' });
+      await new Promise(resolve => setTimeout(resolve, sortSpeed / 3));
+      setActiveCodeLine(31); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // for loop backward
+      // Note: Loop condition corrected to `i >= start` and comparison to `arr[i] > arr[i + 1]`
+      for (let i = end - 1; i >= start; --i) {
+        setActiveCodeLine(32); // Highlight comparison [i, i+1]
+        setComparingIndices([i, i + 1]);
+        await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+        setActiveCodeLine(33); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // if condition
+        if (arr[i] > arr[i + 1]) {
+           setActiveCodeLine(34); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // swap
+          [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
+          swapped = true;
+          setActiveCodeLine(35); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // swapped = true
+          setActiveCodeLine(36); // Update visualization
+          setItems([...arr]);
+          await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+        }
+        setComparingIndices(null);
+        setActiveCodeLine(38); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // Pause/end of loop iteration
+      }
+      setCocktailRange(null); // Clear range highlight
+
+      setActiveCodeLine(41); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // start++;
+      start++;
+      setActiveCodeLine(6); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // loop back to while (swapped)
+    }
+
+    setActiveCodeLine(43); await new Promise(resolve => setTimeout(resolve, sortSpeed / 2)); // End of sort
+    // Clear all highlights
+    setComparingIndices(null); setCurrentIndex(null); setMinIndex(null); setKeyIndex(null);
+    setMergeRange(null); setPivotIndex(null); setHeapIndices(null); setTimSortRange(null); setCocktailRange(null);
+    setActiveAlgorithm(null); setActiveCodeLine(null); setIsSorting(false);
+  }, [items, sortSpeed]);
+
 
   // --- Event Handlers ---
   const handleBubbleSortClick = () => {
@@ -763,9 +852,17 @@ export default function ArraySortingVisualization() { // Renamed component for c
     }
   };
 
+  const handleCocktailSortClick = () => {
+    if (!isSorting) {
+      setComparingIndices(null); setMinIndex(null); setCurrentIndex(null); setKeyIndex(null); setMergeRange(null); setPivotIndex(null); setHeapIndices(null); setTimSortRange(null); setCocktailRange(null);
+      setActiveCodeLine(null);
+      startCocktailSort();
+    }
+  };
+
   const handleResetClick = () => {
      setItems(initialArrayData);
-     setComparingIndices(null); setMinIndex(null); setCurrentIndex(null); setKeyIndex(null); setMergeRange(null); setPivotIndex(null); setHeapIndices(null); setTimSortRange(null);
+     setComparingIndices(null); setMinIndex(null); setCurrentIndex(null); setKeyIndex(null); setMergeRange(null); setPivotIndex(null); setHeapIndices(null); setTimSortRange(null); setCocktailRange(null);
      setActiveAlgorithm(null);
      setActiveCodeLine(null);
   }
@@ -845,6 +942,13 @@ export default function ArraySortingVisualization() { // Renamed component for c
               className="bg-teal-500 hover:bg-teal-700 text-white font-bold py-1 px-2 text-xs rounded disabled:opacity-50 disabled:cursor-not-allowed" // Style button
             >
               Tim
+            </button>
+             <button
+              onClick={handleCocktailSortClick} // Add handler
+              disabled={isSorting}
+              className="bg-cyan-500 hover:bg-cyan-700 text-white font-bold py-1 px-2 text-xs rounded disabled:opacity-50 disabled:cursor-not-allowed" // Style button
+            >
+              Cocktail
             </button>
             <button
               onClick={handleResetClick}
@@ -928,6 +1032,7 @@ export default function ArraySortingVisualization() { // Renamed component for c
           pivotIndex={pivotIndex}
            heapIndices={heapIndices}
            timSortRange={timSortRange} // Pass Tim Sort state
+           cocktailRange={cocktailRange} // Pass Cocktail Shaker Sort state
           />
          {/* <Box position={[-4, 3, 0]} x={1} y={1} z={1}  />
           <Box position={[-2, 3, 0]} x={1} y={2} z={1} />

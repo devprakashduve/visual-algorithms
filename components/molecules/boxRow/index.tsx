@@ -29,6 +29,8 @@ const DEFAULT_BAR_COLOR = "hsl(210, 100%, 50%)"; // Blue
  const HEAP_LARGEST_COLOR = "hsl(180, 100%, 60%)"; // Lighter Teal (Heapify largest node)
  const TIM_SORT_INSERTION_COLOR = "hsl(240, 60%, 70%)"; // Lighter Blue (Tim Sort Insertion Run)
  const TIM_SORT_MERGE_COLOR = "hsl(30, 60%, 70%)"; // Lighter Orange (Tim Sort Merge Run)
+ const COCKTAIL_RANGE_FORWARD_COLOR = "hsl(150, 70%, 60%)"; // Mint Green (Cocktail Forward Pass)
+ const COCKTAIL_RANGE_BACKWARD_COLOR = "hsl(200, 70%, 60%)"; // Sky Blue (Cocktail Backward Pass)
  // ---
  
  // Define props interface
@@ -42,9 +44,10 @@ const DEFAULT_BAR_COLOR = "hsl(210, 100%, 50%)"; // Blue
     pivotIndex?: number | null;        // For Quick Sort pivot
     heapIndices?: { root: number; left?: number; right?: number; largest?: number } | null; // For Heap Sort heapify
     timSortRange?: { type: 'insertion' | 'merge'; start: number; end: number; mid?: number } | null; // For Tim Sort phases
+    cocktailRange?: { start: number; end: number; direction: 'forward' | 'backward' } | null; // For Cocktail Shaker Sort range
   }
 
-  const BoxRow: React.FC<BoxRowProps> = ({ items, comparingIndices, minIndex, currentIndex, keyIndex, mergeRange, pivotIndex, heapIndices, timSortRange }) => {
+  const BoxRow: React.FC<BoxRowProps> = ({ items, comparingIndices, minIndex, currentIndex, keyIndex, mergeRange, pivotIndex, heapIndices, timSortRange, cocktailRange }) => {
   // Use useSprings to manage animations for each item
   const springs = useSprings(
     items.length,
@@ -80,6 +83,9 @@ const DEFAULT_BAR_COLOR = "hsl(210, 100%, 50%)"; // Blue
           const isInTimSortRange = timSortRange && i >= timSortRange.start && i <= timSortRange.end;
           const isTimSortInsertion = isInTimSortRange && timSortRange.type === 'insertion';
           const isTimSortMerge = isInTimSortRange && timSortRange.type === 'merge';
+          const isInCocktailRange = cocktailRange && i >= cocktailRange.start && i <= cocktailRange.end;
+          const isCocktailForward = isInCocktailRange && cocktailRange.direction === 'forward';
+          const isCocktailBackward = isInCocktailRange && cocktailRange.direction === 'backward';
 
           if (isHeapLargest) {
             barColor = HEAP_LARGEST_COLOR; // 1. Heapify largest
@@ -95,12 +101,16 @@ const DEFAULT_BAR_COLOR = "hsl(210, 100%, 50%)"; // Blue
             barColor = MIN_INDEX_COLOR; // 6. Selection sort min index
           } else if (comparingIndices?.includes(i)) {
             barColor = COMPARE_COLOR; // 7. Comparison highlight
+          } else if (isCocktailForward) {
+            barColor = COCKTAIL_RANGE_FORWARD_COLOR; // 8. Cocktail Forward Pass Range
+          } else if (isCocktailBackward) {
+            barColor = COCKTAIL_RANGE_BACKWARD_COLOR; // 9. Cocktail Backward Pass Range
           } else if (isTimSortInsertion) {
-            barColor = TIM_SORT_INSERTION_COLOR; // 8. Tim Sort Insertion Run
+            barColor = TIM_SORT_INSERTION_COLOR; // 10. Tim Sort Insertion Run
           } else if (isTimSortMerge) {
-            barColor = TIM_SORT_MERGE_COLOR; // 9. Tim Sort Merge Run
+            barColor = TIM_SORT_MERGE_COLOR; // 11. Tim Sort Merge Run
           } else if (isInMergeRange) {
-            barColor = MERGE_RANGE_COLOR; // 10. General Merge sort range
+            barColor = MERGE_RANGE_COLOR; // 12. General Merge sort range
           }
  
          return (

@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface AlgorithmCodeDisplayProps {
-  algorithm: 'bubble' | 'selection' | 'insertion' | 'merge' | 'quick' | 'heap' | 'shell' | 'tree' | 'tim' | null; // Add 'tim'
+  algorithm: 'bubble' | 'selection' | 'insertion' | 'merge' | 'quick' | 'heap' | 'shell' | 'tree' | 'tim' | 'cocktail' | null; // Add 'cocktail'
   currentLine: number | null;
 }
 
@@ -296,6 +296,57 @@ async function timSort(arr) {
 }
 `.trim();
 
+// Cocktail Shaker Sort Code String (Placeholder)
+const cocktailSortCode = `
+async function cocktailSort(arr) {
+  let swapped = true;
+  let start = 0;
+  let end = arr.length - 1;
+
+  while (swapped) {
+    // Reset swapped flag
+    swapped = false;
+
+    // Forward pass (like Bubble Sort)
+    // Highlight range [start..end] forward
+    for (let i = start; i < end; ++i) {
+      // Highlight comparison [i, i+1]
+      if (arr[i] > arr[i + 1]) {
+        [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
+        swapped = true;
+        // Update visualization
+      }
+      // Pause
+    }
+
+    // If nothing moved, array is sorted
+    if (!swapped) break;
+
+    // Otherwise, reset swapped flag for backward pass
+    swapped = false;
+    // Move the end point back by one
+    end--;
+
+    // Backward pass
+    // Highlight range [start..end] backward
+    for (let i = end - 1; i >= start; --i) {
+      // Highlight comparison [i, i+1]
+      if (arr[i] > arr[i + 1]) {
+        [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
+        swapped = true;
+        // Update visualization
+      }
+      // Pause
+    }
+
+    // Move the start point forward by one
+    start++;
+  }
+  // Clear highlights
+}
+`.trim();
+
+
  // --- Descriptions ---
  const descriptions = {
    bubble: "Compares adjacent elements and swaps them if they are in the wrong order. Repeats passes until sorted. Simple but inefficient (O(n^2)).",
@@ -307,6 +358,7 @@ async function timSort(arr) {
    shell: "An improvement over insertion sort. Compares elements separated by a gap, then reduces the gap. More efficient than simple insertion sort (average complexity depends on gap sequence).",
    tree: "Builds a Binary Search Tree (BST) from the elements, then performs an in-order traversal to get the sorted sequence. Average O(n log n), but O(n^2) worst case for unbalanced trees. Requires extra space.",
    tim: "A hybrid algorithm derived from Merge Sort and Insertion Sort. Divides the array into 'runs', sorts runs using Insertion Sort, then merges runs using Merge Sort. Efficient (O(n log n)) and stable.",
+   cocktail: "A variation of Bubble Sort that traverses the array in both directions per pass. Slightly improves performance over Bubble Sort by moving items to their correct position faster, but still O(n^2).",
  };
  // ---
  
@@ -359,6 +411,8 @@ const AlgorithmCodeDisplay: React.FC<AlgorithmCodeDisplayProps> = ({ algorithm, 
          return treeSortCode; // Added case
        case 'tim':
          return timSortCode; // Added case
+       case 'cocktail':
+         return cocktailSortCode; // Added case
        case 'selection':
          return selectionSortCode;
        default:
