@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface AlgorithmCodeDisplayProps {
-  algorithm: 'bubble' | 'selection' | 'insertion' | 'merge' | 'quick' | 'heap' | 'shell' | 'tree' | 'tim' | 'cocktail' | 'comb' | 'gnome' | null; // Add 'gnome'
+  algorithm: 'bubble' | 'selection' | 'insertion' | 'merge' | 'quick' | 'heap' | 'shell' | 'tree' | 'tim' | 'cocktail' | 'comb' | 'gnome' | 'strand' | null; // Add 'strand'
   currentLine: number | null;
 }
 
@@ -422,6 +422,57 @@ async function gnomeSort(arr) {
 }
 `.trim();
 
+// Strand Sort Code String (Placeholder)
+const strandSortCode = `
+async function strandSort(arr) {
+  let input = [...arr]; // Copy input
+  let result = []; // Initialize result list
+
+  // Highlight input/result lists
+
+  while (input.length > 0) {
+    let sublist = []; // Initialize current strand (sublist)
+    // Move first element from input to sublist
+    sublist.push(input.shift());
+    // Highlight sublist/input lists
+
+    let i = 0;
+    while (i < input.length) {
+      // Highlight comparison: input[i] vs sublist.last
+      if (input[i] > sublist[sublist.length - 1]) {
+        // Move element from input to sublist
+        sublist.push(input.splice(i, 1)[0]);
+        // Highlight sublist/input lists
+      } else {
+        i++; // Move to next element in input
+      }
+      // Pause
+    }
+
+    // Merge sublist into result
+    let merged = [];
+    let resIdx = 0, subIdx = 0;
+    while (resIdx < result.length && subIdx < sublist.length) {
+      // Highlight merge comparison: result[resIdx] vs sublist[subIdx]
+      if (result[resIdx] < sublist[subIdx]) {
+        merged.push(result[resIdx++]);
+      } else {
+        merged.push(sublist[subIdx++]);
+      }
+      // Update visualization (merged part)
+    }
+    // Add remaining elements
+    merged.push(...result.slice(resIdx));
+    merged.push(...sublist.slice(subIdx));
+    result = merged;
+    // Update visualization (result list)
+    // Pause
+  }
+  // Copy result back to original array for final state
+  // Clear highlights
+}
+`.trim();
+
 
  // --- Descriptions ---
  const descriptions = {
@@ -437,6 +488,7 @@ async function gnomeSort(arr) {
    cocktail: "A variation of Bubble Sort that traverses the array in both directions per pass. Slightly improves performance over Bubble Sort by moving items to their correct position faster, but still O(n^2).",
    comb: "Improves on Bubble Sort by using a gap between compared elements that starts large and shrinks (typically by a factor of 1.3). Helps eliminate 'turtles' (small values near the end) quickly. Average case better than O(n^2).",
    gnome: "Compares the current element with the previous. If they're in order, move forward. If out of order, swap them and move backward. Simple, like Insertion Sort, but moves elements via swaps (O(n^2)).",
+   strand: "Repeatedly extracts sorted sublists ('strands') from the input list and merges them into a result list. Uses extra space. Performance depends on data distribution (O(n) best, O(n^2) worst).",
  };
  // ---
  
@@ -495,6 +547,8 @@ const AlgorithmCodeDisplay: React.FC<AlgorithmCodeDisplayProps> = ({ algorithm, 
          return combSortCode; // Added case
        case 'gnome':
          return gnomeSortCode; // Added case
+       case 'strand':
+         return strandSortCode; // Added case
        case 'selection':
          return selectionSortCode;
        default:

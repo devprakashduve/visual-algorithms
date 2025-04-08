@@ -101,11 +101,15 @@ export default function ArraySortingVisualization() { // Renamed component for c
    const [timSortRange, setTimSortRange] = useState<{ type: 'insertion' | 'merge'; start: number; end: number; mid?: number } | null>(null);
    // State for Cocktail Shaker Sort highlighting (current traversal range)
    const [cocktailRange, setCocktailRange] = useState<{ start: number; end: number; direction: 'forward' | 'backward' } | null>(null);
-   // State for Comb Sort (optional, could display the gap)
    const [combGap, setCombGap] = useState<number | null>(null);
+   // State for Strand Sort highlighting
+   const [strandInputIndices, setStrandInputIndices] = useState<Set<number> | null>(null);
+   const [strandSublistIndices, setStrandSublistIndices] = useState<Set<number> | null>(null);
+   const [strandResultIndices, setStrandResultIndices] = useState<Set<number> | null>(null);
+   const [strandMergeIndices, setStrandMergeIndices] = useState<{ resultIdx: number; sublistIdx: number } | null>(null); // Indices within the conceptual result/sublist arrays during merge
    // Note: Gnome Sort primarily uses currentIndex and comparingIndices, no new state needed specifically for it.
    // State to track the currently active algorithm for code display
-   const [activeAlgorithm, setActiveAlgorithm] = useState<'bubble' | 'selection' | 'insertion' | 'merge' | 'quick' | 'heap' | 'shell' | 'tree' | 'tim' | 'cocktail' | 'comb' | 'gnome' | null>(null);
+   const [activeAlgorithm, setActiveAlgorithm] = useState<'bubble' | 'selection' | 'insertion' | 'merge' | 'quick' | 'heap' | 'shell' | 'tree' | 'tim' | 'cocktail' | 'comb' | 'gnome' | 'strand' | null>(null);
    // State to track the line number to highlight in the code display
    const [activeCodeLine, setActiveCodeLine] = useState<number | null>(null);
 
@@ -909,6 +913,127 @@ export default function ArraySortingVisualization() { // Renamed component for c
     setActiveAlgorithm(null); setActiveCodeLine(null); setIsSorting(false);
   }, [items, sortSpeed]);
 
+  // --- Strand Sort Algorithm ---
+  const startStrandSort = useCallback(async () => {
+    setIsSorting(true); setActiveAlgorithm('strand');
+    setActiveCodeLine(1); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // Start strandSort
+
+    // Use objects to track original index along with value
+    let inputList = items.map((value, index) => ({ value, originalIndex: index }));
+    setActiveCodeLine(2); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    let resultList: { value: number; originalIndex: number }[] = [];
+    setActiveCodeLine(3); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+
+    // Initial visualization: all items are in input
+    setStrandInputIndices(new Set(inputList.map(item => item.originalIndex)));
+    setStrandSublistIndices(new Set());
+    setStrandResultIndices(new Set());
+    setActiveCodeLine(5); await new Promise(resolve => setTimeout(resolve, sortSpeed / 3)); // Highlight input/result lists
+
+    setActiveCodeLine(7); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // while input not empty
+    while (inputList.length > 0) {
+      let sublist: { value: number; originalIndex: number }[] = [];
+      setActiveCodeLine(8); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+
+      // Move first element from input to sublist
+      setActiveCodeLine(10); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+      const firstElement = inputList.shift();
+      if (firstElement) {
+        sublist.push(firstElement);
+        setStrandInputIndices(new Set(inputList.map(item => item.originalIndex)));
+        setStrandSublistIndices(new Set(sublist.map(item => item.originalIndex)));
+        setActiveCodeLine(11); await new Promise(resolve => setTimeout(resolve, sortSpeed / 2)); // Highlight sublist/input lists
+      }
+
+      let i = 0;
+      setActiveCodeLine(13); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // while i < input.length
+      while (i < inputList.length) {
+        setActiveCodeLine(14); // Highlight comparison
+        const inputItem = inputList[i];
+        const sublistLastItem = sublist[sublist.length - 1];
+        setComparingIndices([inputItem.originalIndex, sublistLastItem.originalIndex]);
+        await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+
+        setActiveCodeLine(15); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // if input > sublist.last
+        if (inputItem.value > sublistLastItem.value) {
+          setActiveCodeLine(17); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // Move element
+          sublist.push(inputList.splice(i, 1)[0]); // Remove from input and add to sublist
+          setStrandInputIndices(new Set(inputList.map(item => item.originalIndex)));
+          setStrandSublistIndices(new Set(sublist.map(item => item.originalIndex)));
+          setActiveCodeLine(18); await new Promise(resolve => setTimeout(resolve, sortSpeed / 2)); // Highlight lists
+          // Don't increment i, as splice shifts elements
+        } else {
+          setActiveCodeLine(20); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // else i++
+          i++;
+        }
+        setComparingIndices(null);
+        setActiveCodeLine(22); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // Pause/end of loop iter
+        setActiveCodeLine(13); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // loop back to while i < input.length
+      }
+      setComparingIndices(null); // Clear comparison after loop
+
+      // Merge sublist into result
+      setActiveCodeLine(25); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // Merge sublist into result
+      let mergedList: { value: number; originalIndex: number }[] = [];
+      setActiveCodeLine(26); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+      let resIdx = 0, subIdx = 0;
+      setActiveCodeLine(27); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+
+      setActiveCodeLine(28); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // while resIdx < result.length && subIdx < sublist.length
+      while (resIdx < resultList.length && subIdx < sublist.length) {
+        setActiveCodeLine(29); // Highlight merge comparison
+        setComparingIndices([resultList[resIdx].originalIndex, sublist[subIdx].originalIndex]);
+        setStrandMergeIndices({ resultIdx: resIdx, sublistIdx: subIdx }); // Indicate conceptual indices being compared
+        await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+
+        setActiveCodeLine(30); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // if result < sublist
+        if (resultList[resIdx].value < sublist[subIdx].value) {
+          setActiveCodeLine(31); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+          mergedList.push(resultList[resIdx++]);
+        } else {
+          setActiveCodeLine(33); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+          mergedList.push(sublist[subIdx++]);
+        }
+        setComparingIndices(null);
+        setStrandMergeIndices(null);
+        // Update visualization of the result list as it's being built conceptually
+        setStrandResultIndices(new Set(mergedList.map(item => item.originalIndex)));
+        setActiveCodeLine(35); await new Promise(resolve => setTimeout(resolve, sortSpeed / 2)); // Update visualization (merged part)
+        setActiveCodeLine(28); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // loop back to while merge
+      }
+      setComparingIndices(null); // Clear comparison after loop
+
+      // Add remaining elements
+      setActiveCodeLine(37); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+      mergedList.push(...resultList.slice(resIdx));
+      mergedList.push(...sublist.slice(subIdx));
+      resultList = mergedList;
+      setActiveCodeLine(38); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+      setActiveCodeLine(39); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+
+      // Update visualization: sublist is now empty, result has grown
+      setStrandSublistIndices(new Set());
+      setStrandResultIndices(new Set(resultList.map(item => item.originalIndex)));
+      setActiveCodeLine(40); await new Promise(resolve => setTimeout(resolve, sortSpeed / 2)); // Update visualization (result list)
+      setActiveCodeLine(41); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // Pause
+
+      setActiveCodeLine(7); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // loop back to while input not empty
+    }
+
+    // Copy result back to original array for final state
+    setActiveCodeLine(43); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    const finalSortedItems = resultList.map(item => item.value);
+    setItems(finalSortedItems);
+    await new Promise(resolve => setTimeout(resolve, sortSpeed)); // Show final state
+
+    setActiveCodeLine(44); await new Promise(resolve => setTimeout(resolve, sortSpeed / 2)); // Clear highlights
+    // Clear all highlights
+    setComparingIndices(null); setCurrentIndex(null); setMinIndex(null); setKeyIndex(null);
+    setMergeRange(null); setPivotIndex(null); setHeapIndices(null); setTimSortRange(null); setCocktailRange(null); setCombGap(null);
+    setStrandInputIndices(null); setStrandSublistIndices(null); setStrandResultIndices(null); setStrandMergeIndices(null);
+    setActiveAlgorithm(null); setActiveCodeLine(null); setIsSorting(false);
+  }, [items, sortSpeed]);
+
 
   // --- Event Handlers ---
   const handleBubbleSortClick = () => {
@@ -1007,9 +1132,19 @@ export default function ArraySortingVisualization() { // Renamed component for c
     }
   };
 
+   const handleStrandSortClick = () => {
+    if (!isSorting) {
+      setComparingIndices(null); setMinIndex(null); setCurrentIndex(null); setKeyIndex(null); setMergeRange(null); setPivotIndex(null); setHeapIndices(null); setTimSortRange(null); setCocktailRange(null); setCombGap(null);
+      setStrandInputIndices(null); setStrandSublistIndices(null); setStrandResultIndices(null); setStrandMergeIndices(null);
+      setActiveCodeLine(null);
+      startStrandSort();
+    }
+  };
+
   const handleResetClick = () => {
      setItems(initialArrayData);
      setComparingIndices(null); setMinIndex(null); setCurrentIndex(null); setKeyIndex(null); setMergeRange(null); setPivotIndex(null); setHeapIndices(null); setTimSortRange(null); setCocktailRange(null); setCombGap(null);
+     setStrandInputIndices(null); setStrandSublistIndices(null); setStrandResultIndices(null); setStrandMergeIndices(null);
      setActiveAlgorithm(null);
      setActiveCodeLine(null);
   }
@@ -1111,6 +1246,13 @@ export default function ArraySortingVisualization() { // Renamed component for c
             >
               Gnome
             </button>
+             <button
+              onClick={handleStrandSortClick} // Add handler
+              disabled={isSorting}
+              className="bg-rose-500 hover:bg-rose-700 text-white font-bold py-1 px-2 text-xs rounded disabled:opacity-50 disabled:cursor-not-allowed" // Style button
+            >
+              Strand
+            </button>
             <button
               onClick={handleResetClick}
               disabled={isSorting}
@@ -1195,6 +1337,10 @@ export default function ArraySortingVisualization() { // Renamed component for c
            timSortRange={timSortRange} // Pass Tim Sort state
            cocktailRange={cocktailRange} // Pass Cocktail Shaker Sort state
            // combGap={combGap} // Pass Comb Sort state (optional display)
+           strandInputIndices={strandInputIndices}
+           strandSublistIndices={strandSublistIndices}
+           strandResultIndices={strandResultIndices}
+           strandMergeIndices={strandMergeIndices}
           />
          {/* <Box position={[-4, 3, 0]} x={1} y={1} z={1}  />
           <Box position={[-2, 3, 0]} x={1} y={2} z={1} />
