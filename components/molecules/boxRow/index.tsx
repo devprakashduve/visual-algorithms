@@ -17,8 +17,8 @@ const LABEL_BOX_SCALE_X = 0.5;
 const LABEL_BOX_SCALE_Y = 0.5;
 const LABEL_BOX_SCALE_Z = 0.5;
 const VALUE_LABEL_Y_OFFSET = 0.5; // Y offset for the static value label box
-const LINE_COLOR = "grey";
-const LINE_WIDTH = 3;
+const LINE_COLOR = "green";
+const LINE_WIDTH = 5;
 
 
 // Highlight Colors
@@ -90,6 +90,15 @@ const DEFAULT_BAR_COLOR = "hsl(210, 100%, 50%)"; // Blue
     return new Float32Array([...start.toArray(), ...end.toArray()]);
   }, []); // Empty dependency array means this runs once per item
   
+
+  const ValueLinePoints = useMemo(() => {
+    // Start point: Center of the background box (at the group's origin)
+    const start = new Vector3(0, 0.5, 0);
+    // End point: Position of the InfoBox
+    const end = new Vector3(0, 0.5, 5); // Matches InfoBox position prop below
+    // Return coordinates flattened into a Float32Array for bufferAttribute
+    return new Float32Array([...start.toArray(), ...end.toArray()]);
+  }, []); 
   // Map springs to animated components
   return (
     <>
@@ -195,6 +204,29 @@ const DEFAULT_BAR_COLOR = "hsl(210, 100%, 50%)"; // Blue
                                        // Reminder: linewidth > 1 might not render thicker
               />
             </line></>} {/* InfoBox for Array Index */}
+
+            {indexValue==springs.length-1 && <> 
+           <InfoBox
+              text={`Array values`} // Display specific index
+              position={new Vector3(0, 0.4, 5)} // Moved significantly back in Z
+            />
+             {/* --- FIXED: Added Connecting Line (Object <-> InfoBox) --- */}
+             <line>
+              <bufferGeometry attach="geometry">
+                 <bufferAttribute
+                   attach="attributes-position"
+                   count={2}
+                   array={ValueLinePoints} // Use the calculated points
+                   itemSize={3}
+                 />
+              </bufferGeometry>
+              <lineBasicMaterial
+                attach="material"
+                color={LINE_COLOR}    // Use line color constant
+                linewidth={LINE_WIDTH} // Use line width constant
+                                       // Reminder: linewidth > 1 might not render thicker
+              />
+            </line></>}
            
              {/* Static value label box */}
             <Box

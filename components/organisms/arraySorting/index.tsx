@@ -1298,7 +1298,8 @@ export default function ArraySortingVisualization() { // Renamed component for c
         penumbra={0.5}
         castShadow
       /> */}
-      <ambientLight intensity={1} />
+      <ambientLight intensity={1} color={'white'} />
+      {/* <ambientLight intensity={1} /> */}
       <spotLight
         position={[0, 25, 25]}
         angle={Math.PI / 4}
