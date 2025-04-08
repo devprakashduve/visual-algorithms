@@ -1,7 +1,8 @@
-import React from "react";
+// 'use client'; // Ensure this is a client component
+import React, { useMemo } from "react";
 import { useSprings, animated } from '@react-spring/three'; // Import react-spring
 import Box from "../../atoms/box";
-import { DoubleSide, Vector3 } from "three";
+import { DoubleSide, Vector3 } from "three"; // Import Vector3
 import InfoBox from "../infoBox";
 
 // --- Constants for Layout and Styling ---
@@ -16,6 +17,9 @@ const LABEL_BOX_SCALE_X = 0.5;
 const LABEL_BOX_SCALE_Y = 0.5;
 const LABEL_BOX_SCALE_Z = 0.5;
 const VALUE_LABEL_Y_OFFSET = 0.5; // Y offset for the static value label box
+const LINE_COLOR = "grey";
+const LINE_WIDTH = 3;
+
 
 // Highlight Colors
 const DEFAULT_BAR_COLOR = "hsl(210, 100%, 50%)"; // Blue
@@ -77,7 +81,15 @@ const DEFAULT_BAR_COLOR = "hsl(210, 100%, 50%)"; // Blue
       };
     })
   );
-
+  const linePoints = useMemo(() => {
+    // Start point: Center of the background box (at the group's origin)
+    const start = new Vector3(0, 0, 0);
+    // End point: Position of the InfoBox
+    const end = new Vector3(0, 0, 5); // Matches InfoBox position prop below
+    // Return coordinates flattened into a Float32Array for bufferAttribute
+    return new Float32Array([...start.toArray(), ...end.toArray()]);
+  }, []); // Empty dependency array means this runs once per item
+  
   // Map springs to animated components
   return (
     <>
@@ -161,6 +173,29 @@ const DEFAULT_BAR_COLOR = "hsl(210, 100%, 50%)"; // Blue
               customTexture={true}
               arrayValue={indexValue}
             />
+           {indexValue==0 && <> 
+           <InfoBox
+              text={`Array index starts with ${indexValue}`} // Display specific index
+              position={new Vector3(0, -0.1, 5)} // Moved significantly back in Z
+            />
+             {/* --- FIXED: Added Connecting Line (Object <-> InfoBox) --- */}
+             <line>
+              <bufferGeometry attach="geometry">
+                 <bufferAttribute
+                   attach="attributes-position"
+                   count={2}
+                   array={linePoints} // Use the calculated points
+                   itemSize={3}
+                 />
+              </bufferGeometry>
+              <lineBasicMaterial
+                attach="material"
+                color={LINE_COLOR}    // Use line color constant
+                linewidth={LINE_WIDTH} // Use line width constant
+                                       // Reminder: linewidth > 1 might not render thicker
+              />
+            </line></>} {/* InfoBox for Array Index */}
+           
              {/* Static value label box */}
             <Box
               positionVal={[0, VALUE_LABEL_Y_OFFSET, 0]} // Use constant
