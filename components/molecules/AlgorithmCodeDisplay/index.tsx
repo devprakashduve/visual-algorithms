@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface AlgorithmCodeDisplayProps {
-  algorithm: 'bubble' | 'selection' | 'insertion' | 'merge' | 'quick' | 'heap' | 'shell' | 'tree' | 'tim' | 'cocktail' | null; // Add 'cocktail'
+  algorithm: 'bubble' | 'selection' | 'insertion' | 'merge' | 'quick' | 'heap' | 'shell' | 'tree' | 'tim' | 'cocktail' | 'comb' | null; // Add 'comb'
   currentLine: number | null;
 }
 
@@ -346,6 +346,50 @@ async function cocktailSort(arr) {
 }
 `.trim();
 
+// Comb Sort Code String (Placeholder)
+const combSortCode = `
+// Function to get the next gap size
+function getNextGap(gap) {
+  // Shrink gap by Shrink factor
+  gap = Math.floor((gap * 10) / 13); // Standard shrink factor = 1.3
+  if (gap < 1) {
+    return 1;
+  }
+  return gap;
+}
+
+async function combSort(arr) {
+  let n = arr.length;
+  // Initialize gap
+  let gap = n;
+  // Initialize swapped as true to make sure that loop runs
+  let swapped = true;
+
+  // Keep running while gap is more than 1 and last iteration caused a swap
+  while (gap !== 1 || swapped === true) {
+    // Find next gap
+    gap = getNextGap(gap);
+    // Highlight gap (optional visualization)
+
+    // Initialize swapped as false so that we can check if swap happened or not
+    swapped = false;
+
+    // Compare all elements with current gap
+    for (let i = 0; i < n - gap; i++) {
+      // Highlight comparison [i, i + gap]
+      if (arr[i] > arr[i + gap]) {
+        // Swap arr[i] and arr[i+gap]
+        [arr[i], arr[i + gap]] = [arr[i + gap], arr[i]];
+        swapped = true;
+        // Update visualization
+      }
+      // Pause
+    }
+  }
+  // Clear highlights
+}
+`.trim();
+
 
  // --- Descriptions ---
  const descriptions = {
@@ -359,6 +403,7 @@ async function cocktailSort(arr) {
    tree: "Builds a Binary Search Tree (BST) from the elements, then performs an in-order traversal to get the sorted sequence. Average O(n log n), but O(n^2) worst case for unbalanced trees. Requires extra space.",
    tim: "A hybrid algorithm derived from Merge Sort and Insertion Sort. Divides the array into 'runs', sorts runs using Insertion Sort, then merges runs using Merge Sort. Efficient (O(n log n)) and stable.",
    cocktail: "A variation of Bubble Sort that traverses the array in both directions per pass. Slightly improves performance over Bubble Sort by moving items to their correct position faster, but still O(n^2).",
+   comb: "Improves on Bubble Sort by using a gap between compared elements that starts large and shrinks (typically by a factor of 1.3). Helps eliminate 'turtles' (small values near the end) quickly. Average case better than O(n^2).",
  };
  // ---
  
@@ -413,6 +458,8 @@ const AlgorithmCodeDisplay: React.FC<AlgorithmCodeDisplayProps> = ({ algorithm, 
          return timSortCode; // Added case
        case 'cocktail':
          return cocktailSortCode; // Added case
+       case 'comb':
+         return combSortCode; // Added case
        case 'selection':
          return selectionSortCode;
        default:
@@ -424,7 +471,7 @@ const AlgorithmCodeDisplay: React.FC<AlgorithmCodeDisplayProps> = ({ algorithm, 
   const lines = code.split('\n');
 
   return (
-    <div className="absolute top-2 right-2 z-10 bg-gray-800 text-white p-4 rounded-md shadow-md max-h-[calc(100vh-2rem)] overflow-y-auto font-mono text-sm w-1/3">
+    <div className="absolute top-2 right-2 z-10 bg-white/40 text-green-900 p-4 rounded-md shadow-md max-h-[calc(100vh-2rem)] overflow-y-auto font-mono text-sm w-1/3">
       <h3 className="text-lg font-semibold mb-2 border-b border-gray-600 pb-1">
         {algorithm ? `${algorithm.charAt(0).toUpperCase() + algorithm.slice(1)} Sort Code` : 'Algorithm Code'}
       </h3>
@@ -444,9 +491,9 @@ const AlgorithmCodeDisplay: React.FC<AlgorithmCodeDisplayProps> = ({ algorithm, 
        </pre>
        {/* Description Section */}
        {algorithm && descriptions[algorithm] && (
-         <div className="mt-4 pt-2 border-t border-gray-600">
+         <div className="mt-4 pt-2 border-t border-green-800">
            <h4 className="text-md font-semibold mb-1">Description:</h4>
-           <p className="text-xs text-gray-300">{descriptions[algorithm]}</p>
+           <p className="text-xs text-green-800">{descriptions[algorithm]}</p>
          </div>
        )}
      </div>

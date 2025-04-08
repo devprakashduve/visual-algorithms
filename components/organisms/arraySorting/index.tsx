@@ -101,8 +101,10 @@ export default function ArraySortingVisualization() { // Renamed component for c
    const [timSortRange, setTimSortRange] = useState<{ type: 'insertion' | 'merge'; start: number; end: number; mid?: number } | null>(null);
    // State for Cocktail Shaker Sort highlighting (current traversal range)
    const [cocktailRange, setCocktailRange] = useState<{ start: number; end: number; direction: 'forward' | 'backward' } | null>(null);
+   // State for Comb Sort (optional, could display the gap)
+   const [combGap, setCombGap] = useState<number | null>(null);
    // State to track the currently active algorithm for code display
-   const [activeAlgorithm, setActiveAlgorithm] = useState<'bubble' | 'selection' | 'insertion' | 'merge' | 'quick' | 'heap' | 'shell' | 'tree' | 'tim' | 'cocktail' | null>(null);
+   const [activeAlgorithm, setActiveAlgorithm] = useState<'bubble' | 'selection' | 'insertion' | 'merge' | 'quick' | 'heap' | 'shell' | 'tree' | 'tim' | 'cocktail' | 'comb' | null>(null);
    // State to track the line number to highlight in the code display
    const [activeCodeLine, setActiveCodeLine] = useState<number | null>(null);
 
@@ -778,6 +780,78 @@ export default function ArraySortingVisualization() { // Renamed component for c
     setActiveAlgorithm(null); setActiveCodeLine(null); setIsSorting(false);
   }, [items, sortSpeed]);
 
+  // --- Comb Sort Algorithm ---
+  // Function to get the next gap (made async for visualization pauses)
+  const getNextGap = async (gap: number): Promise<number> => {
+    setActiveCodeLine(3); // Corresponds to getNextGap call
+    // Shrink gap by Shrink factor
+    gap = Math.floor((gap * 10) / 13); // Standard shrink factor = 1.3
+    setActiveCodeLine(4); await new Promise(resolve => setTimeout(resolve, sortSpeed / 5));
+    if (gap < 1) {
+      setActiveCodeLine(5); await new Promise(resolve => setTimeout(resolve, sortSpeed / 5));
+      setActiveCodeLine(6); await new Promise(resolve => setTimeout(resolve, sortSpeed / 5));
+      return 1;
+    }
+    setActiveCodeLine(8); await new Promise(resolve => setTimeout(resolve, sortSpeed / 5));
+    return gap;
+  };
+
+  const startCombSort = useCallback(async () => {
+    setIsSorting(true); setActiveAlgorithm('comb');
+    setActiveCodeLine(11); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // Start combSort function
+    let arr = [...items];
+    let n = arr.length;
+    setActiveCodeLine(12); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    // Initialize gap
+    let gap = n;
+    setCombGap(gap); // Set initial gap state
+    setActiveCodeLine(14); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    // Initialize swapped as true to make sure that loop runs
+    let swapped = true;
+    setActiveCodeLine(16); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+
+    // Keep running while gap is not 1 or swapped is true
+    setActiveCodeLine(19); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // while loop condition
+    while (gap !== 1 || swapped === true) {
+      // Find next gap
+      setActiveCodeLine(21); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+      gap = await getNextGap(gap);
+      setCombGap(gap); // Update gap state
+      setActiveCodeLine(22); await new Promise(resolve => setTimeout(resolve, sortSpeed / 3)); // Highlight gap (optional)
+
+      // Initialize swapped as false so that we can check if swap happened or not
+      setActiveCodeLine(25); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+      swapped = false;
+
+      // Compare all elements with current gap
+      setActiveCodeLine(28); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // for loop
+      for (let i = 0; i < n - gap; i++) {
+        setActiveCodeLine(29); // Highlight comparison [i, i + gap]
+        setComparingIndices([i, i + gap]);
+        await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+        setActiveCodeLine(30); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // if condition
+        if (arr[i] > arr[i + gap]) {
+          setActiveCodeLine(31); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // swap
+          [arr[i], arr[i + gap]] = [arr[i + gap], arr[i]];
+          swapped = true;
+          setActiveCodeLine(32); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // swapped = true
+          setActiveCodeLine(33); // Update visualization
+          setItems([...arr]);
+          await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+        }
+        setComparingIndices(null);
+        setActiveCodeLine(35); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // Pause/end of loop iteration
+      }
+       setActiveCodeLine(19); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // loop back to while condition
+    }
+
+    setActiveCodeLine(38); await new Promise(resolve => setTimeout(resolve, sortSpeed / 2)); // End of sort
+    // Clear all highlights
+    setComparingIndices(null); setCurrentIndex(null); setMinIndex(null); setKeyIndex(null);
+    setMergeRange(null); setPivotIndex(null); setHeapIndices(null); setTimSortRange(null); setCocktailRange(null); setCombGap(null);
+    setActiveAlgorithm(null); setActiveCodeLine(null); setIsSorting(false);
+  }, [items, sortSpeed]);
+
 
   // --- Event Handlers ---
   const handleBubbleSortClick = () => {
@@ -860,9 +934,17 @@ export default function ArraySortingVisualization() { // Renamed component for c
     }
   };
 
+  const handleCombSortClick = () => {
+    if (!isSorting) {
+      setComparingIndices(null); setMinIndex(null); setCurrentIndex(null); setKeyIndex(null); setMergeRange(null); setPivotIndex(null); setHeapIndices(null); setTimSortRange(null); setCocktailRange(null); setCombGap(null);
+      setActiveCodeLine(null);
+      startCombSort();
+    }
+  };
+
   const handleResetClick = () => {
      setItems(initialArrayData);
-     setComparingIndices(null); setMinIndex(null); setCurrentIndex(null); setKeyIndex(null); setMergeRange(null); setPivotIndex(null); setHeapIndices(null); setTimSortRange(null); setCocktailRange(null);
+     setComparingIndices(null); setMinIndex(null); setCurrentIndex(null); setKeyIndex(null); setMergeRange(null); setPivotIndex(null); setHeapIndices(null); setTimSortRange(null); setCocktailRange(null); setCombGap(null);
      setActiveAlgorithm(null);
      setActiveCodeLine(null);
   }
@@ -950,6 +1032,13 @@ export default function ArraySortingVisualization() { // Renamed component for c
             >
               Cocktail
             </button>
+             <button
+              onClick={handleCombSortClick} // Add handler
+              disabled={isSorting}
+              className="bg-lime-500 hover:bg-lime-700 text-white font-bold py-1 px-2 text-xs rounded disabled:opacity-50 disabled:cursor-not-allowed" // Style button
+            >
+              Comb
+            </button>
             <button
               onClick={handleResetClick}
               disabled={isSorting}
@@ -1033,6 +1122,7 @@ export default function ArraySortingVisualization() { // Renamed component for c
            heapIndices={heapIndices}
            timSortRange={timSortRange} // Pass Tim Sort state
            cocktailRange={cocktailRange} // Pass Cocktail Shaker Sort state
+           // combGap={combGap} // Pass Comb Sort state (optional display)
           />
          {/* <Box position={[-4, 3, 0]} x={1} y={1} z={1}  />
           <Box position={[-2, 3, 0]} x={1} y={2} z={1} />
