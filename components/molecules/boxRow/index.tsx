@@ -27,6 +27,8 @@ const DEFAULT_BAR_COLOR = "hsl(210, 100%, 50%)"; // Blue
  const PIVOT_COLOR = "hsl(330, 100%, 50%)"; // Pink (Quick Sort pivot)
  const HEAP_NODE_COLOR = "hsl(180, 70%, 40%)"; // Teal (Heapify nodes: root, left, right)
  const HEAP_LARGEST_COLOR = "hsl(180, 100%, 60%)"; // Lighter Teal (Heapify largest node)
+ const TIM_SORT_INSERTION_COLOR = "hsl(240, 60%, 70%)"; // Lighter Blue (Tim Sort Insertion Run)
+ const TIM_SORT_MERGE_COLOR = "hsl(30, 60%, 70%)"; // Lighter Orange (Tim Sort Merge Run)
  // ---
  
  // Define props interface
@@ -36,12 +38,13 @@ const DEFAULT_BAR_COLOR = "hsl(210, 100%, 50%)"; // Blue
    minIndex?: number | null;          // For Selection Sort minimum found
    currentIndex?: number | null;      // For Selection/Insertion Sort current index
    keyIndex?: number | null;          // For Insertion Sort key
-   mergeRange?: { left: number; right: number } | null; // For Merge Sort range
-   pivotIndex?: number | null;        // For Quick Sort pivot
-   heapIndices?: { root: number; left?: number; right?: number; largest?: number } | null; // For Heap Sort heapify
- }
- 
- const BoxRow: React.FC<BoxRowProps> = ({ items, comparingIndices, minIndex, currentIndex, keyIndex, mergeRange, pivotIndex, heapIndices }) => {
+    mergeRange?: { left: number; right: number } | null; // For Merge Sort range
+    pivotIndex?: number | null;        // For Quick Sort pivot
+    heapIndices?: { root: number; left?: number; right?: number; largest?: number } | null; // For Heap Sort heapify
+    timSortRange?: { type: 'insertion' | 'merge'; start: number; end: number; mid?: number } | null; // For Tim Sort phases
+  }
+
+  const BoxRow: React.FC<BoxRowProps> = ({ items, comparingIndices, minIndex, currentIndex, keyIndex, mergeRange, pivotIndex, heapIndices, timSortRange }) => {
   // Use useSprings to manage animations for each item
   const springs = useSprings(
     items.length,
@@ -71,27 +74,34 @@ const DEFAULT_BAR_COLOR = "hsl(210, 100%, 50%)"; // Blue
  
          // Determine highlight state and color (with priority)
          let barColor = DEFAULT_BAR_COLOR;
-         const isInMergeRange = mergeRange && i >= mergeRange.left && i <= mergeRange.right;
-         const isHeapNode = heapIndices && (i === heapIndices.root || i === heapIndices.left || i === heapIndices.right);
-         const isHeapLargest = heapIndices && i === heapIndices.largest;
- 
-         if (isHeapLargest) {
-           barColor = HEAP_LARGEST_COLOR; // 1. Heapify largest
-         } else if (isHeapNode) {
-           barColor = HEAP_NODE_COLOR; // 2. Heapify root/children
-         } else if (pivotIndex === i) {
-           barColor = PIVOT_COLOR; // 3. Quick Sort Pivot
-         } else if (keyIndex === i) {
+          const isInMergeRange = mergeRange && i >= mergeRange.left && i <= mergeRange.right;
+          const isHeapNode = heapIndices && (i === heapIndices.root || i === heapIndices.left || i === heapIndices.right);
+          const isHeapLargest = heapIndices && i === heapIndices.largest;
+          const isInTimSortRange = timSortRange && i >= timSortRange.start && i <= timSortRange.end;
+          const isTimSortInsertion = isInTimSortRange && timSortRange.type === 'insertion';
+          const isTimSortMerge = isInTimSortRange && timSortRange.type === 'merge';
+
+          if (isHeapLargest) {
+            barColor = HEAP_LARGEST_COLOR; // 1. Heapify largest
+          } else if (isHeapNode) {
+            barColor = HEAP_NODE_COLOR; // 2. Heapify root/children
+          } else if (pivotIndex === i) {
+            barColor = PIVOT_COLOR; // 3. Quick Sort Pivot
+          } else if (keyIndex === i) {
            barColor = KEY_COLOR; // 4. Insertion sort key
          } else if (currentIndex === i) {
            barColor = CURRENT_INDEX_COLOR; // 5. Selection/Insertion current index
          } else if (minIndex === i) {
-           barColor = MIN_INDEX_COLOR; // 6. Selection sort min index
-         } else if (comparingIndices?.includes(i)) {
-           barColor = COMPARE_COLOR; // 7. Comparison highlight
-         } else if (isInMergeRange) {
-           barColor = MERGE_RANGE_COLOR; // 8. Merge sort range
-         }
+            barColor = MIN_INDEX_COLOR; // 6. Selection sort min index
+          } else if (comparingIndices?.includes(i)) {
+            barColor = COMPARE_COLOR; // 7. Comparison highlight
+          } else if (isTimSortInsertion) {
+            barColor = TIM_SORT_INSERTION_COLOR; // 8. Tim Sort Insertion Run
+          } else if (isTimSortMerge) {
+            barColor = TIM_SORT_MERGE_COLOR; // 9. Tim Sort Merge Run
+          } else if (isInMergeRange) {
+            barColor = MERGE_RANGE_COLOR; // 10. General Merge sort range
+          }
  
          return (
           // Each item is an animated group, its 'position' prop animates horizontally during swaps

@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface AlgorithmCodeDisplayProps {
-  algorithm: 'bubble' | 'selection' | 'insertion' | 'merge' | 'quick' | 'heap' | 'shell' | 'tree' | null; // Add 'tree'
+  algorithm: 'bubble' | 'selection' | 'insertion' | 'merge' | 'quick' | 'heap' | 'shell' | 'tree' | 'tim' | null; // Add 'tim'
   currentLine: number | null;
 }
 
@@ -247,8 +247,55 @@ async function treeSort(arr) { // Line 39
   await inorderRec(root, arr); // Line 46
   // Clear highlights
  } // Line 48
- `.trim();
- 
+  `.trim();
+
+// Tim Sort Code String (Placeholder)
+const timSortCode = `
+// Tim Sort combines Insertion Sort and Merge Sort.
+// 1. Divide the array into blocks (runs).
+// 2. Sort each run using Insertion Sort.
+// 3. Merge the sorted runs using Merge Sort.
+
+const MIN_MERGE = 32; // Typical value
+
+function calcMinRun(n) { /* ... calculates optimal run size ... */ }
+
+async function insertionSortForTim(arr, left, right) { /* ... visualized insertion sort ... */ }
+
+async function mergeForTim(arr, l, m, r) { /* ... visualized merge ... */ }
+
+async function timSort(arr) {
+  let n = arr.length;
+  let minRun = calcMinRun(n);
+
+  // Sort individual subarrays of size RUN
+  for (let i = 0; i < n; i += minRun) {
+    await insertionSortForTim(arr, i, Math.min((i + minRun - 1), (n - 1)));
+  }
+
+  // Start merging from size RUN (or 32). It will merge
+  // to form size 64, then 128, 256 and so on ....
+  for (let size = minRun; size < n; size = 2 * size) {
+    // pick starting point of left sub array. We
+    // are going to merge arr[left..left+size-1]
+    // and arr[left+size..left+2*size-1]
+    // After every merge, we increase left by 2*size
+    for (let left = 0; left < n; left += 2 * size) {
+      // find ending point of left sub array
+      // mid+1 is starting point of right sub array
+      let mid = left + size - 1;
+      let right = Math.min((left + 2 * size - 1), (n - 1));
+
+      // merge sub array arr[left.....mid] & arr[mid+1....right]
+      if (mid < right) { // Ensure mid is less than right before merging
+          await mergeForTim(arr, left, mid, right);
+      }
+    }
+  }
+  // Clear highlights
+}
+`.trim();
+
  // --- Descriptions ---
  const descriptions = {
    bubble: "Compares adjacent elements and swaps them if they are in the wrong order. Repeats passes until sorted. Simple but inefficient (O(n^2)).",
@@ -259,6 +306,7 @@ async function treeSort(arr) { // Line 39
    heap: "Builds a max heap from the input data, then repeatedly extracts the maximum element from the heap and places it at the end of the sorted portion. Efficient (O(n log n)).",
    shell: "An improvement over insertion sort. Compares elements separated by a gap, then reduces the gap. More efficient than simple insertion sort (average complexity depends on gap sequence).",
    tree: "Builds a Binary Search Tree (BST) from the elements, then performs an in-order traversal to get the sorted sequence. Average O(n log n), but O(n^2) worst case for unbalanced trees. Requires extra space.",
+   tim: "A hybrid algorithm derived from Merge Sort and Insertion Sort. Divides the array into 'runs', sorts runs using Insertion Sort, then merges runs using Merge Sort. Efficient (O(n log n)) and stable.",
  };
  // ---
  
@@ -309,6 +357,8 @@ const AlgorithmCodeDisplay: React.FC<AlgorithmCodeDisplayProps> = ({ algorithm, 
          return shellSortCode;
        case 'tree':
          return treeSortCode; // Added case
+       case 'tim':
+         return timSortCode; // Added case
        case 'selection':
          return selectionSortCode;
        default:
