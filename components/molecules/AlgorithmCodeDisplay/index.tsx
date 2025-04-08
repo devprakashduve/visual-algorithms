@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface AlgorithmCodeDisplayProps {
-  algorithm: 'bubble' | 'selection' | 'insertion' | 'merge' | 'quick' | 'heap' | 'shell' | 'tree' | 'tim' | 'cocktail' | 'comb' | null; // Add 'comb'
+  algorithm: 'bubble' | 'selection' | 'insertion' | 'merge' | 'quick' | 'heap' | 'shell' | 'tree' | 'tim' | 'cocktail' | 'comb' | 'gnome' | null; // Add 'gnome'
   currentLine: number | null;
 }
 
@@ -390,6 +390,38 @@ async function combSort(arr) {
 }
 `.trim();
 
+// Gnome Sort Code String (Placeholder)
+const gnomeSortCode = `
+async function gnomeSort(arr) {
+  let n = arr.length;
+  let index = 0;
+  // Highlight index
+
+  while (index < n) {
+    if (index === 0) {
+      // Move to next element if at the start
+      index++;
+      // Highlight index
+    }
+    // Highlight comparison [index, index - 1]
+    if (arr[index] >= arr[index - 1]) {
+      // Move forward if in order
+      index++;
+      // Highlight index
+    } else {
+      // Swap if out of order
+      [arr[index], arr[index - 1]] = [arr[index - 1], arr[index]];
+      // Update visualization
+      // Move backward
+      index--;
+      // Highlight index
+    }
+    // Pause
+  }
+  // Clear highlights
+}
+`.trim();
+
 
  // --- Descriptions ---
  const descriptions = {
@@ -404,6 +436,7 @@ async function combSort(arr) {
    tim: "A hybrid algorithm derived from Merge Sort and Insertion Sort. Divides the array into 'runs', sorts runs using Insertion Sort, then merges runs using Merge Sort. Efficient (O(n log n)) and stable.",
    cocktail: "A variation of Bubble Sort that traverses the array in both directions per pass. Slightly improves performance over Bubble Sort by moving items to their correct position faster, but still O(n^2).",
    comb: "Improves on Bubble Sort by using a gap between compared elements that starts large and shrinks (typically by a factor of 1.3). Helps eliminate 'turtles' (small values near the end) quickly. Average case better than O(n^2).",
+   gnome: "Compares the current element with the previous. If they're in order, move forward. If out of order, swap them and move backward. Simple, like Insertion Sort, but moves elements via swaps (O(n^2)).",
  };
  // ---
  
@@ -460,6 +493,8 @@ const AlgorithmCodeDisplay: React.FC<AlgorithmCodeDisplayProps> = ({ algorithm, 
          return cocktailSortCode; // Added case
        case 'comb':
          return combSortCode; // Added case
+       case 'gnome':
+         return gnomeSortCode; // Added case
        case 'selection':
          return selectionSortCode;
        default:

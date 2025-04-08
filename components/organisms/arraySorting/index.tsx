@@ -103,8 +103,9 @@ export default function ArraySortingVisualization() { // Renamed component for c
    const [cocktailRange, setCocktailRange] = useState<{ start: number; end: number; direction: 'forward' | 'backward' } | null>(null);
    // State for Comb Sort (optional, could display the gap)
    const [combGap, setCombGap] = useState<number | null>(null);
+   // Note: Gnome Sort primarily uses currentIndex and comparingIndices, no new state needed specifically for it.
    // State to track the currently active algorithm for code display
-   const [activeAlgorithm, setActiveAlgorithm] = useState<'bubble' | 'selection' | 'insertion' | 'merge' | 'quick' | 'heap' | 'shell' | 'tree' | 'tim' | 'cocktail' | 'comb' | null>(null);
+   const [activeAlgorithm, setActiveAlgorithm] = useState<'bubble' | 'selection' | 'insertion' | 'merge' | 'quick' | 'heap' | 'shell' | 'tree' | 'tim' | 'cocktail' | 'comb' | 'gnome' | null>(null);
    // State to track the line number to highlight in the code display
    const [activeCodeLine, setActiveCodeLine] = useState<number | null>(null);
 
@@ -852,6 +853,62 @@ export default function ArraySortingVisualization() { // Renamed component for c
     setActiveAlgorithm(null); setActiveCodeLine(null); setIsSorting(false);
   }, [items, sortSpeed]);
 
+  // --- Gnome Sort Algorithm ---
+  const startGnomeSort = useCallback(async () => {
+    setIsSorting(true); setActiveAlgorithm('gnome');
+    setActiveCodeLine(1); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // Start gnomeSort function
+    let arr = [...items];
+    let n = arr.length;
+    setActiveCodeLine(2); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    let index = 0;
+    setActiveCodeLine(3); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4));
+    setCurrentIndex(index); // Highlight initial index
+    setActiveCodeLine(4); await new Promise(resolve => setTimeout(resolve, sortSpeed / 3));
+
+    setActiveCodeLine(6); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // while loop condition
+    while (index < n) {
+      setActiveCodeLine(7); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // if (index === 0)
+      if (index === 0) {
+        setActiveCodeLine(9); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // index++;
+        index++;
+        setCurrentIndex(index); // Highlight next index
+        setActiveCodeLine(10); await new Promise(resolve => setTimeout(resolve, sortSpeed / 3));
+      } else {
+        setActiveCodeLine(12); // Highlight comparison [index, index - 1]
+        setComparingIndices([index, index - 1]);
+        await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+        setActiveCodeLine(13); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // if (arr[index] >= arr[index - 1])
+        if (arr[index] >= arr[index - 1]) {
+          setComparingIndices(null);
+          setActiveCodeLine(15); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // index++;
+          index++;
+          setCurrentIndex(index); // Highlight next index
+          setActiveCodeLine(16); await new Promise(resolve => setTimeout(resolve, sortSpeed / 3));
+        } else {
+          setActiveCodeLine(18); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // Swap
+          [arr[index], arr[index - 1]] = [arr[index - 1], arr[index]];
+          setActiveCodeLine(19); // Update visualization
+          setItems([...arr]);
+          setComparingIndices(null); // Clear comparison after swap visualization
+          await new Promise(resolve => setTimeout(resolve, sortSpeed / 2));
+          setActiveCodeLine(21); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // index--;
+          index--;
+          setCurrentIndex(index); // Highlight index after moving back
+          setActiveCodeLine(22); await new Promise(resolve => setTimeout(resolve, sortSpeed / 3));
+        }
+      }
+      setComparingIndices(null); // Ensure comparison is cleared before next loop iteration
+      setActiveCodeLine(24); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // Pause/end of loop iteration
+      setActiveCodeLine(6); await new Promise(resolve => setTimeout(resolve, sortSpeed / 4)); // loop back to while condition
+    }
+
+    setActiveCodeLine(26); await new Promise(resolve => setTimeout(resolve, sortSpeed / 2)); // End of sort
+    // Clear all highlights
+    setComparingIndices(null); setCurrentIndex(null); setMinIndex(null); setKeyIndex(null);
+    setMergeRange(null); setPivotIndex(null); setHeapIndices(null); setTimSortRange(null); setCocktailRange(null); setCombGap(null);
+    setActiveAlgorithm(null); setActiveCodeLine(null); setIsSorting(false);
+  }, [items, sortSpeed]);
+
 
   // --- Event Handlers ---
   const handleBubbleSortClick = () => {
@@ -939,6 +996,14 @@ export default function ArraySortingVisualization() { // Renamed component for c
       setComparingIndices(null); setMinIndex(null); setCurrentIndex(null); setKeyIndex(null); setMergeRange(null); setPivotIndex(null); setHeapIndices(null); setTimSortRange(null); setCocktailRange(null); setCombGap(null);
       setActiveCodeLine(null);
       startCombSort();
+    }
+  };
+
+  const handleGnomeSortClick = () => {
+    if (!isSorting) {
+      setComparingIndices(null); setMinIndex(null); setCurrentIndex(null); setKeyIndex(null); setMergeRange(null); setPivotIndex(null); setHeapIndices(null); setTimSortRange(null); setCocktailRange(null); setCombGap(null);
+      setActiveCodeLine(null);
+      startGnomeSort();
     }
   };
 
@@ -1038,6 +1103,13 @@ export default function ArraySortingVisualization() { // Renamed component for c
               className="bg-lime-500 hover:bg-lime-700 text-white font-bold py-1 px-2 text-xs rounded disabled:opacity-50 disabled:cursor-not-allowed" // Style button
             >
               Comb
+            </button>
+             <button
+              onClick={handleGnomeSortClick} // Add handler
+              disabled={isSorting}
+              className="bg-emerald-500 hover:bg-emerald-700 text-white font-bold py-1 px-2 text-xs rounded disabled:opacity-50 disabled:cursor-not-allowed" // Style button
+            >
+              Gnome
             </button>
             <button
               onClick={handleResetClick}
