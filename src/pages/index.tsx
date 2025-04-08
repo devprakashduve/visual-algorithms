@@ -1,14 +1,14 @@
 import { Inter } from "next/font/google";
 import { useSession } from "next-auth/react";
-import Card from "../../components/molecules/card";
+// import Card from "../../components/molecules/card";
 import Header from "../../components/organisms/header";
-import Button from "../../components/atoms/button";
+// import Button from "../../components/atoms/button";
 import Footer from "../../components/organisms/footer";
-import Banner from "../../components/molecules/banner";
+// import Banner from "../../components/molecules/banner";
 
 import { useState } from "react";
-import ArrayVisualization from "../../components/organisms/arraySimplePage";
-import BubbleShorting from "../../components/organisms/arrayBubbleSorting";
+// import ArrayVisualization from "../../components/organisms/arraySimplePage";
+// import BubbleShorting from "../../components/organisms/arrayBubbleSorting";
 
 // Dynamically import BubbleSortVisualization with SSR disabled
 import dynamic from 'next/dynamic';
